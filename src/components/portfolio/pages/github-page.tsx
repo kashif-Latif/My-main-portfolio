@@ -21,6 +21,7 @@ import {
 import { siteConfig, profile, gmailComposeUrl } from "@/data/profile";
 import { SectionHeading } from "@/components/portfolio/section-heading";
 import { skills } from "@/data/skills";
+import { githubRepos, GithubRepo } from "@/data/github-repos";
 import { AccentColor, accentTextClass, accentBorderClass, accentBgClass } from "@/lib/accents";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { cn } from "@/lib/utils";
@@ -84,34 +85,38 @@ export function GithubPage() {
         </div>
       </section>
 
-      {/* ===== STATS ===== */}
+      {/* ===== STATS (animated count-up) ===== */}
       <section className="relative py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
+            <AnimatedStatCard
               label="Public repositories"
-              value="40+"
+              value={40}
+              suffix="+"
               caption="Across AI, full-stack & embedded"
               icon={Github}
               accent="blue"
             />
-            <StatCard
+            <AnimatedStatCard
               label="Contributions"
-              value="10,000+"
+              value={10000}
+              suffix="+"
               caption="Pushed consistently across all repos"
               icon={TrendingUp}
               accent="cyan"
             />
-            <StatCard
+            <AnimatedStatCard
               label="Stars earned"
-              value="100+"
+              value={100}
+              suffix="+"
               caption="Across public repositories"
               icon={Star}
               accent="gold"
             />
-            <StatCard
+            <AnimatedStatCard
               label="Languages used"
-              value="5+"
+              value={5}
+              suffix="+"
               caption="TypeScript, Python, JS, C++, Java"
               icon={Code2}
               accent="purple"
@@ -120,7 +125,7 @@ export function GithubPage() {
         </div>
       </section>
 
-      {/* ===== FEATURED REPOS PLACEHOLDER ===== */}
+      {/* ===== FEATURED REPOSITORIES (real repos) ===== */}
       <section className="relative py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4 mb-6">
@@ -138,42 +143,22 @@ export function GithubPage() {
             </a>
           </div>
 
-          {/* Repo placeholder cards */}
+          {/* Featured repos (highlighted) */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+            {githubRepos
+              .filter((r) => r.featured)
+              .map((repo, i) => (
+                <RepoCard key={repo.name} repo={repo} index={i} featured />
+              ))}
+          </div>
+
+          {/* All repositories */}
+          <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground mt-12 mb-4">
+            All repositories ({githubRepos.length})
+          </h4>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 hover:border-white/[0.12] transition-colors"
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <Github className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                    Repository
-                  </span>
-                </div>
-                <h4 className="font-mono text-sm font-medium text-foreground">
-                  your-username/repo-{i}
-                </h4>
-                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                  Live repository data will appear here once the GitHub API is
-                  connected. Replace the placeholder username in{" "}
-                  <code className="rounded bg-white/[0.04] px-1 py-0.5 text-[10px]">
-                    data/profile.ts
-                  </code>{" "}
-                  to enable.
-                </p>
-                <div className="mt-3 flex items-center gap-3 text-[10px] text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    —
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <GitFork className="h-3 w-3" />
-                    —
-                  </span>
-                  <span className="ml-auto h-2 w-2 rounded-full bg-[oklch(0.62_0.18_250)]/40" />
-                </div>
-              </div>
+            {githubRepos.map((repo, i) => (
+              <RepoCard key={repo.name} repo={repo} index={i} />
             ))}
           </div>
         </div>
@@ -456,5 +441,184 @@ function ContactLink({
       </div>
       <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
     </a>
+  );
+}
+
+/* ---------- Animated Stat Card (count-up on scroll) ---------- */
+function AnimatedStatCard({
+  label,
+  value,
+  suffix = "",
+  caption,
+  icon: Icon,
+  accent,
+}: {
+  label: string;
+  value: number;
+  suffix?: string;
+  caption: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: AccentColor;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [display, setDisplay] = React.useState(0);
+
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDisplay(value);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const duration = 1400;
+          const start = performance.now();
+          const tick = (now: number) => {
+            const t = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            setDisplay(Math.floor(eased * value));
+            if (t < 1) requestAnimationFrame(tick);
+            else setDisplay(value);
+          };
+          requestAnimationFrame(tick);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [value]);
+
+  const formatNum = (n: number) => {
+    if (value >= 1000) return n.toLocaleString();
+    return String(n);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 backdrop-blur-sm overflow-hidden"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <div
+          className={cn(
+            "grid h-10 w-10 place-items-center rounded-xl border",
+            accentBorderClass[accent],
+            accentBgClass[accent]
+          )}
+        >
+          <Icon className={cn("h-4 w-4", accentTextClass[accent])} />
+        </div>
+        <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          {label}
+        </span>
+      </div>
+      <div className={cn("font-display text-3xl font-semibold tabular-nums", accentTextClass[accent])}>
+        {formatNum(display)}{suffix}
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground leading-relaxed">{caption}</p>
+    </motion.div>
+  );
+}
+
+/* ---------- Repo Card ---------- */
+function RepoCard({
+  repo,
+  index,
+  featured = false,
+}: {
+  repo: GithubRepo;
+  index: number;
+  featured?: boolean;
+}) {
+  return (
+    <motion.a
+      href={repo.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.04, 0.4) }}
+      whileHover={{ y: -2 }}
+      className={cn(
+        "group relative flex flex-col rounded-2xl border bg-card/40 p-4 transition-colors",
+        featured
+          ? "border-[oklch(0.62_0.18_250_/_30%)] hover:border-[oklch(0.62_0.18_250_/_50%)]"
+          : "border-white/[0.06] hover:border-white/[0.14]"
+      )}
+    >
+      {/* Featured badge */}
+      {featured && (
+        <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border border-[oklch(0.62_0.18_250_/_30%)] bg-[oklch(0.62_0.18_250_/_0.06)] px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-[oklch(0.7_0.18_250)]">
+          <Star className="h-2.5 w-2.5" />
+          Featured
+        </span>
+      )}
+
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-2">
+        <Github className="h-4 w-4 text-muted-foreground" />
+        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          {siteConfig.social.githubUsername}/{repo.name}
+        </span>
+      </div>
+
+      {/* Repo name */}
+      <h4 className="font-display text-base font-semibold text-foreground group-hover:text-[oklch(0.7_0.18_250)] transition-colors">
+        {repo.name}
+      </h4>
+
+      {/* Description */}
+      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed line-clamp-2 flex-1">
+        {repo.description}
+      </p>
+
+      {/* Footer: language, stars, forks, updated */}
+      <div className="mt-3 flex items-center gap-3 text-[10px] text-muted-foreground border-t border-white/[0.04] pt-2.5">
+        <span className="flex items-center gap-1">
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{ backgroundColor: repo.languageColor }}
+          />
+          {repo.language}
+        </span>
+        <span className="flex items-center gap-1">
+          <Star className="h-3 w-3" />
+          {repo.stars}
+        </span>
+        <span className="flex items-center gap-1">
+          <GitFork className="h-3 w-3" />
+          {repo.forks}
+        </span>
+        <span className="ml-auto text-muted-foreground/60">
+          {repo.updatedAt}
+        </span>
+      </div>
+
+      {/* Live demo link if available */}
+      {repo.demo && (
+        <a
+          href={repo.demo}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-[oklch(0.7_0.18_250)] hover:text-[oklch(0.78_0.18_250)] transition-colors"
+        >
+          <ExternalLink className="h-2.5 w-2.5" />
+          Live demo
+        </a>
+      )}
+    </motion.a>
   );
 }

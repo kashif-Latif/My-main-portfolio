@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { CheckCircle2, Circle, Loader2, Sparkles, Compass } from "lucide-react";
 import { journeyStages, currentlyExploring, JourneyStage } from "@/data/journey";
 import { SectionHeading } from "@/components/portfolio/section-heading";
@@ -31,10 +31,15 @@ export function JourneyPage() {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start 0.5", "end 0.5"],
+    offset: ["start 0.3", "end 0.7"],
   });
 
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  // Spring smooths the line so it eases nicely when scrolling up/down
+  const lineHeight = useSpring(scrollYProgress, {
+    stiffness: 120,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   return (
     <div className="relative">
@@ -50,26 +55,51 @@ export function JourneyPage() {
                 <span className="text-gradient-gold">agentic AI</span>.
               </>
             }
-            description="A cinematic timeline of how I'm progressing from writing my first line of HTML toward building autonomous AI agent systems. Scroll to follow the path — each stage is a deliberate step."
+            description="A cinematic timeline of how I'm progressing from writing my first line of HTML toward building autonomous AI agent systems. Scroll to follow the path — the line on the left fills as you descend and reverses when you scroll back up."
           />
         </div>
       </section>
 
       {/* ===== TIMELINE ===== */}
       <section ref={containerRef} className="relative py-12 pb-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="relative">
-            {/* Track */}
-            <div className="absolute left-[19px] sm:left-1/2 sm:-translate-x-1/2 top-0 bottom-0 w-px bg-white/[0.06]" />
+            {/* Static track (background line) — always on the left side of the dev boxes */}
+            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-white/[0.06]" />
 
-            {/* Animated progress line */}
+            {/* Animated progress line — fills as you scroll down, reverses on scroll up */}
             <motion.div
-              style={{ height: lineHeight }}
-              className="absolute left-[19px] sm:left-1/2 sm:-translate-x-1/2 top-0 w-px bg-gradient-to-b from-[oklch(0.62_0.18_250)] via-[oklch(0.55_0.22_295)] to-[oklch(0.78_0.13_90)]"
-            />
+              style={{ scaleY: lineHeight, transformOrigin: "top" }}
+              className="absolute left-[19px] top-0 bottom-0 w-px"
+            >
+              <div
+                className="h-full w-full"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, #5a8dff 0%, #9b8cff 50%, #f0a830 100%)",
+                  boxShadow:
+                    "0 0 8px rgba(90, 141, 255, 0.6), 0 0 16px rgba(155, 140, 255, 0.4)",
+                }}
+              />
+            </motion.div>
+
+            {/* Glowing dot that travels along the line as you scroll */}
+            <motion.div
+              style={{ top: useTransform(lineHeight, (v) => `${v * 100}%`) }}
+              className="absolute left-[19px] -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none"
+            >
+              <div
+                className="h-3 w-3 rounded-full"
+                style={{
+                  background: "#5a8dff",
+                  boxShadow:
+                    "0 0 12px rgba(90, 141, 255, 0.9), 0 0 24px rgba(90, 141, 255, 0.5)",
+                }}
+              />
+            </motion.div>
 
             {/* Stages */}
-            <div className="flex flex-col gap-12 sm:gap-16">
+            <div className="flex flex-col gap-10 sm:gap-14">
               {journeyStages.map((stage, i) => (
                 <JourneyStageCard key={stage.id} stage={stage} index={i} />
               ))}
@@ -86,7 +116,7 @@ export function JourneyPage() {
               className="pointer-events-none absolute inset-0 opacity-50"
               style={{
                 background:
-                  "radial-gradient(ellipse at top left, oklch(0.78 0.13 90 / 6%) 0%, transparent 60%)",
+                  "radial-gradient(ellipse at top left, rgba(240, 168, 48, 0.06) 0%, transparent 60%)",
               }}
             />
             <div className="relative grid gap-10 lg:grid-cols-[1fr_2fr] lg:items-center">
@@ -123,24 +153,20 @@ export function JourneyPage() {
 /* ---------- Stage Card ---------- */
 function JourneyStageCard({ stage, index }: { stage: JourneyStage; index: number }) {
   const accent = stageAccent[stage.accent];
-  const isLeft = index % 2 === 0;
   const StatusIcon = statusIcon[stage.status];
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        "relative pl-12 sm:pl-0",
-        "sm:grid sm:grid-cols-2 sm:gap-12"
-      )}
+      initial={{ opacity: 0, x: -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="relative pl-12"
     >
       {/* Node on the line */}
       <div
         className={cn(
-          "absolute left-[12px] sm:left-1/2 sm:-translate-x-1/2 top-2 grid h-4 w-4 place-items-center",
+          "absolute left-[12px] top-3 grid h-4 w-4 place-items-center",
           "rounded-full border-2 border-background z-10"
         )}
       >
@@ -153,60 +179,64 @@ function JourneyStageCard({ stage, index }: { stage: JourneyStage; index: number
         />
       </div>
 
-      {/* Content - alternating sides on desktop */}
-      <div className={cn(isLeft ? "sm:col-start-1" : "sm:col-start-2")}>
-        <div className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 sm:p-6 transition-colors hover:border-white/[0.12]">
-          {/* Header row */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col gap-1">
-              <span
-                className={cn(
-                  "inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider",
-                  accentBorderClass[accent],
-                  accentTextClass[accent]
-                )}
-              >
-                <span className="font-mono tabular-nums">0{stage.index}</span>
-                {stage.title}
-              </span>
-              <p className="text-xs text-muted-foreground mt-1">{stage.subtitle}</p>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <StatusIcon
-                className={cn(
-                  "h-4 w-4",
-                  accentTextClass[accent],
-                  stage.status === "active" && "animate-spin"
-                )}
-                style={{ animationDuration: "3s" }}
-              />
-              <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
-                {statusLabel[stage.status]}
-              </span>
-            </div>
+      {/* Content card (the "dev box") */}
+      <div className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 sm:p-6 transition-all hover:border-white/[0.14] hover:shadow-lg hover:shadow-black/20">
+        {/* Accent glow on hover */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
+          style={{
+            background:
+              "radial-gradient(ellipse at top right, rgba(90, 141, 255, 0.06) 0%, transparent 60%)",
+          }}
+        />
+
+        {/* Header row */}
+        <div className="relative flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex flex-col gap-1">
+            <span
+              className={cn(
+                "inline-flex w-fit items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider",
+                accentBorderClass[accent],
+                accentTextClass[accent]
+              )}
+            >
+              <span className="font-mono tabular-nums">0{stage.index}</span>
+              {stage.title}
+            </span>
+            <p className="text-xs text-muted-foreground mt-1">{stage.subtitle}</p>
           </div>
-
-          {/* Description */}
-          <p className="mt-4 text-sm text-foreground/85 leading-relaxed">
-            {stage.description}
-          </p>
-
-          {/* Items */}
-          <div className="mt-4 flex flex-wrap gap-1.5">
-            {stage.items.map((item) => (
-              <span
-                key={item}
-                className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-mono text-foreground/80"
-              >
-                {item}
-              </span>
-            ))}
+          <div className="flex items-center gap-2">
+            <StatusIcon
+              className={cn(
+                "h-4 w-4",
+                accentTextClass[accent],
+                stage.status === "active" && "animate-spin"
+              )}
+              style={{ animationDuration: "3s" }}
+            />
+            <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
+              {statusLabel[stage.status]}
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Empty placeholder for the other column - desktop only */}
-      <div className="hidden sm:block" />
+        {/* Description */}
+        <p className="relative mt-4 text-sm text-foreground/85 leading-relaxed">
+          {stage.description}
+        </p>
+
+        {/* Items */}
+        <div className="relative mt-4 flex flex-wrap gap-1.5">
+          {stage.items.map((item) => (
+            <span
+              key={item}
+              className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-mono text-foreground/80"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
     </motion.div>
   );
 }
