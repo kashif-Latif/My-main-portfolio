@@ -9,14 +9,29 @@ interface LoadingScreenProps {
 
 const indicators = ["Code", "Data", "AI", "Systems"];
 
+// "Muhammad KL" split into individual letters for staggered animation.
+// Each letter has a color: blue for M and K, white for the rest, purple for L.
+const letters = [
+  { char: "M", color: "oklch(0.7 0.18 250)" },   // blue
+  { char: "u", color: "#e8e6e1" },                 // white
+  { char: "h", color: "#e8e6e1" },
+  { char: "a", color: "#e8e6e1" },
+  { char: "m", color: "#e8e6e1" },
+  { char: "m", color: "#e8e6e1" },
+  { char: "a", color: "#e8e6e1" },
+  { char: "d", color: "#e8e6e1" },
+  { char: " ", color: "transparent" },             // gap
+  { char: "K", color: "oklch(0.7 0.18 250)" },   // blue
+  { char: "L", color: "oklch(0.65 0.2 295)" },   // purple
+];
+
 /**
  * Loading sequence (blue theme):
- *  - "Muhammad KL" drawn-paths record plays
+ *  - "Muhammad KL" appears with letter-by-letter reveal
  *  - Blinking indicators + progress bar
  *  - Fade out
  *
- * On mobile: slightly longer duration to ensure all letters fully render.
- * On desktop: fast and snappy.
+ * Uses HTML text (not SVG) for maximum mobile compatibility.
  */
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const [done, setDone] = React.useState(false);
@@ -35,13 +50,18 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
     }
   }, []);
 
-  // Mobile gets slightly more time to ensure all letters render
-  const totalDuration = reduced ? 500 : isMobile ? 1800 : 1200;
+  // Use a single duration that works for both mobile and desktop.
+  // We can't rely on isMobile for the initial timeout because isMobile
+  // updates after first render — the first timeout would fire with the
+  // desktop value before isMobile updates. So we use 2000ms for everyone,
+  // which is long enough for mobile to see all letters and fast enough
+  // for desktop to feel snappy.
+  const totalDuration = reduced ? 500 : 2000;
 
   React.useEffect(() => {
     const t = setTimeout(() => {
       setDone(true);
-      setTimeout(onComplete, 300);
+      setTimeout(onComplete, 400);
     }, totalDuration);
     return () => clearTimeout(t);
   }, [reduced, totalDuration, onComplete]);
@@ -75,10 +95,10 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
     );
   }
 
-  // Stagger timings — slightly slower on mobile for clarity
-  const letterDur = isMobile ? 0.22 : 0.18;
-  const stagger = isMobile ? 0.08 : 0.06;
-  const startDelay = 0.1;
+  // Stagger timings — same for all devices for consistency
+  const letterDur = 0.25;
+  const stagger = 0.1;
+  const startDelay = 0.15;
 
   return (
     <AnimatePresence>
@@ -86,7 +106,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
         <motion.div
           className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-background"
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={{ duration: 0.4 }}
         >
           {/* Background grid */}
           <div
@@ -108,149 +128,66 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             }}
           />
 
-          {/* "Muhammad KL" drawn from connected paths */}
-          <div className="relative z-10 w-full max-w-[600px] px-4 flex justify-center">
-            <svg
-              width="100%"
-              height="auto"
-              viewBox="0 0 560 80"
-              fill="none"
-              className="relative z-10"
-              style={{ maxWidth: "560px" }}
-              aria-label="Muhammad KL system boot"
-              preserveAspectRatio="xMidYMid meet"
+          {/* "Muhammad KL" — letter-by-letter reveal using HTML text */}
+          <div className="relative z-10 w-full px-4 flex justify-center">
+            <h1
+              className="font-display font-bold tracking-tight text-center flex flex-wrap justify-center"
+              style={{
+                fontSize: "clamp(1.75rem, 9vw, 3.5rem)",
+                lineHeight: 1.1,
+              }}
+              aria-label="Muhammad KL"
             >
-              {/* M — blue */}
-              <motion.path
-                d="M10 70 L10 15 L28 55 L46 15 L46 70"
-                stroke="oklch(0.7 0.18 250)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 0, ease: "easeInOut" }}
-              />
-              {/* u */}
-              <motion.path
-                d="M62 30 L62 60 Q62 70 72 70 Q82 70 82 60 L82 30"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 1, ease: "easeInOut" }}
-              />
-              {/* h */}
-              <motion.path
-                d="M96 15 L96 70 M96 40 Q96 30 106 30 Q116 30 116 45 L116 70"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 2, ease: "easeInOut" }}
-              />
-              {/* a */}
-              <motion.path
-                d="M132 55 Q132 45 142 45 Q152 45 152 55 L152 70 M152 55 Q152 70 142 70 Q132 70 132 60"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 3, ease: "easeInOut" }}
-              />
-              {/* m */}
-              <motion.path
-                d="M168 70 L168 40 M168 40 Q168 30 176 30 Q184 30 184 45 L184 70 M184 40 Q184 30 192 30 Q200 30 200 45 L200 70"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 4, ease: "easeInOut" }}
-              />
-              {/* m (second) */}
-              <motion.path
-                d="M214 70 L214 40 M214 40 Q214 30 222 30 Q230 30 230 45 L230 70 M230 40 Q230 30 238 30 Q246 30 246 45 L246 70"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 5, ease: "easeInOut" }}
-              />
-              {/* a (second) */}
-              <motion.path
-                d="M262 55 Q262 45 272 45 Q282 45 282 55 L282 70 M282 55 Q282 70 272 70 Q262 70 262 60"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 6, ease: "easeInOut" }}
-              />
-              {/* d */}
-              <motion.path
-                d="M306 15 L306 70 M306 40 Q306 30 296 30 Q286 30 286 50 Q286 70 296 70 Q306 70 306 60"
-                stroke="#e8e6e1"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 7, ease: "easeInOut" }}
-              />
-
-              {/* K — blue */}
-              <motion.path
-                d="M340 70 L340 15 M340 45 L370 15 M340 45 L370 70"
-                stroke="oklch(0.7 0.18 250)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 8, ease: "easeInOut" }}
-              />
-              {/* L — purple */}
-              <motion.path
-                d="M395 15 L395 70 L440 70"
-                stroke="oklch(0.65 0.2 295)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: letterDur, delay: startDelay + stagger * 9, ease: "easeInOut" }}
-              />
-
-              {/* System pulse traveling across */}
-              <motion.circle
-                cx="10"
-                cy="70"
-                r="4"
-                fill="oklch(0.7 0.18 250)"
-                initial={{ opacity: 0, cx: 10 }}
-                animate={{ opacity: [0, 1, 0], cx: [10, 440] }}
-                transition={{ duration: 0.6, delay: startDelay + stagger * 10, ease: "easeInOut" }}
-              />
-            </svg>
+              {letters.map((letter, i) => {
+                // Skip animation for the space character
+                if (letter.char === " ") {
+                  return <span key={i} style={{ width: "0.3em" }} />;
+                }
+                return (
+                  <motion.span
+                    key={i}
+                    initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{
+                      duration: letterDur,
+                      delay: startDelay + stagger * i,
+                      ease: [0.16, 1, 0.3, 1],
+                    }}
+                    style={{
+                      color: letter.color,
+                      display: "inline-block",
+                      textShadow:
+                        letter.color !== "#e8e6e1" && letter.color !== "transparent"
+                          ? `0 0 20px ${letter.color}80`
+                          : "none",
+                    }}
+                  >
+                    {letter.char}
+                  </motion.span>
+                );
+              })}
+            </h1>
           </div>
+
+          {/* Underline that grows in after letters */}
+          <motion.div
+            className="relative z-10 mt-4 h-px bg-gradient-to-r from-transparent via-[oklch(0.62_0.18_250)] to-transparent"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: "180px", opacity: 1 }}
+            transition={{
+              delay: startDelay + stagger * letters.length + 0.1,
+              duration: 0.5,
+              ease: "easeOut",
+            }}
+            style={{ boxShadow: "0 0 8px oklch(0.62 0.18 250 / 60%)" }}
+          />
 
           {/* Indicators */}
           <motion.div
-            className="relative z-10 mt-6 flex gap-4 sm:gap-6"
+            className="relative z-10 mt-8 flex gap-4 sm:gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.3 }}
+            transition={{ delay: 0.5, duration: 0.3 }}
           >
             {indicators.map((ind, i) => (
               <motion.div
@@ -258,12 +195,12 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 className="flex items-center gap-1.5 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 + i * 0.06, duration: 0.2 }}
+                transition={{ delay: 0.55 + i * 0.08, duration: 0.2 }}
               >
                 <motion.span
                   className="h-1.5 w-1.5 rounded-full bg-[oklch(0.62_0.18_250)]"
                   animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1, delay: 0.35 + i * 0.06, repeat: Infinity }}
+                  transition={{ duration: 1, delay: 0.55 + i * 0.08, repeat: Infinity }}
                 />
                 {ind}
               </motion.div>
@@ -271,7 +208,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
           </motion.div>
 
           {/* Progress bar */}
-          <div className="relative z-10 mt-6 h-px w-48 sm:w-56 overflow-hidden bg-white/10">
+          <div className="relative z-10 mt-6 h-px w-44 sm:w-56 overflow-hidden bg-white/10">
             <motion.div
               className="h-full bg-[oklch(0.62_0.18_250)]"
               initial={{ width: "0%" }}
