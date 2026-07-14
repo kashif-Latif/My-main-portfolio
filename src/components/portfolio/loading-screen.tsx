@@ -11,18 +11,19 @@ const indicators = ["Code", "Data", "AI", "Systems"];
 
 // "Muhammad KL" split into individual letters for staggered animation.
 // Each letter has a color: blue for M and K, white for the rest, purple for L.
+// Using hex colors (not oklch) for maximum mobile browser compatibility.
 const letters = [
-  { char: "M", color: "oklch(0.7 0.18 250)" },   // blue
-  { char: "u", color: "#e8e6e1" },                 // white
-  { char: "h", color: "#e8e6e1" },
-  { char: "a", color: "#e8e6e1" },
-  { char: "m", color: "#e8e6e1" },
-  { char: "m", color: "#e8e6e1" },
-  { char: "a", color: "#e8e6e1" },
-  { char: "d", color: "#e8e6e1" },
-  { char: " ", color: "transparent" },             // gap
-  { char: "K", color: "oklch(0.7 0.18 250)" },   // blue
-  { char: "L", color: "oklch(0.65 0.2 295)" },   // purple
+  { char: "M", color: "#5a8dff", glow: "rgba(90, 141, 255, 0.6)" },   // blue
+  { char: "u", color: "#e8e6e1", glow: "transparent" },               // white
+  { char: "h", color: "#e8e6e1", glow: "transparent" },
+  { char: "a", color: "#e8e6e1", glow: "transparent" },
+  { char: "m", color: "#e8e6e1", glow: "transparent" },
+  { char: "m", color: "#e8e6e1", glow: "transparent" },
+  { char: "a", color: "#e8e6e1", glow: "transparent" },
+  { char: "d", color: "#e8e6e1", glow: "transparent" },
+  { char: " ", color: "transparent", glow: "transparent" },           // gap
+  { char: "K", color: "#5a8dff", glow: "rgba(90, 141, 255, 0.6)" },   // blue
+  { char: "L", color: "#9b8cff", glow: "rgba(155, 140, 255, 0.6)" },  // purple
 ];
 
 /**
@@ -124,7 +125,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             className="absolute left-1/2 top-1/2 h-[40vmin] w-[40vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl"
             style={{
               background:
-                "radial-gradient(circle, oklch(0.62 0.18 250 / 50%) 0%, transparent 70%)",
+                "radial-gradient(circle, rgba(90, 141, 255, 0.5) 0%, transparent 70%)",
             }}
           />
 
@@ -141,7 +142,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               {letters.map((letter, i) => {
                 // Skip animation for the space character
                 if (letter.char === " ") {
-                  return <span key={i} style={{ width: "0.3em" }} />;
+                  return <span key={i} style={{ width: "0.3em", display: "inline-block" }} />;
                 }
                 return (
                   <motion.span
@@ -156,10 +157,8 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
                     style={{
                       color: letter.color,
                       display: "inline-block",
-                      textShadow:
-                        letter.color !== "#e8e6e1" && letter.color !== "transparent"
-                          ? `0 0 20px ${letter.color}80`
-                          : "none",
+                      textShadow: letter.glow !== "transparent" ? `0 0 16px ${letter.glow}, 0 0 32px ${letter.glow}` : "none",
+                      willChange: "opacity, transform, filter",
                     }}
                   >
                     {letter.char}
@@ -169,9 +168,9 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             </h1>
           </div>
 
-          {/* Underline that grows in after letters */}
+          {/* Underline that grows in after letters — using inline style for mobile compatibility */}
           <motion.div
-            className="relative z-10 mt-4 h-px bg-gradient-to-r from-transparent via-[oklch(0.62_0.18_250)] to-transparent"
+            className="relative z-10 mt-4 h-[2px]"
             initial={{ width: 0, opacity: 0 }}
             animate={{ width: "180px", opacity: 1 }}
             transition={{
@@ -179,7 +178,11 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               duration: 0.5,
               ease: "easeOut",
             }}
-            style={{ boxShadow: "0 0 8px oklch(0.62 0.18 250 / 60%)" }}
+            style={{
+              background: "linear-gradient(to right, transparent, #5a8dff, transparent)",
+              boxShadow: "0 0 8px rgba(90, 141, 255, 0.6), 0 0 16px rgba(90, 141, 255, 0.4)",
+              willChange: "width, opacity",
+            }}
           />
 
           {/* Indicators */}
@@ -198,7 +201,8 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 transition={{ delay: 0.55 + i * 0.08, duration: 0.2 }}
               >
                 <motion.span
-                  className="h-1.5 w-1.5 rounded-full bg-[oklch(0.62_0.18_250)]"
+                  className="h-1.5 w-1.5 rounded-full"
+                  style={{ backgroundColor: "#5a8dff" }}
                   animate={{ opacity: [0.3, 1, 0.3] }}
                   transition={{ duration: 1, delay: 0.55 + i * 0.08, repeat: Infinity }}
                 />
@@ -210,11 +214,11 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
           {/* Progress bar */}
           <div className="relative z-10 mt-6 h-px w-44 sm:w-56 overflow-hidden bg-white/10">
             <motion.div
-              className="h-full bg-[oklch(0.62_0.18_250)]"
+              className="h-full"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
               transition={{ duration: totalDuration / 1000, ease: "linear" }}
-              style={{ boxShadow: "0 0 8px oklch(0.62 0.18 250 / 80%)" }}
+              style={{ backgroundColor: "#5a8dff", boxShadow: "0 0 8px rgba(90, 141, 255, 0.8)" }}
             />
           </div>
 
