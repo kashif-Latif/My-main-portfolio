@@ -10,26 +10,33 @@ interface LoadingScreenProps {
 const indicators = ["Code", "Data", "AI", "Systems"];
 
 /**
- * Loading sequence (blue theme) — FAST:
- *  - "Muhammad KL" drawn-paths record plays quickly
+ * Loading sequence (blue theme):
+ *  - "Muhammad KL" drawn-paths record plays
  *  - Blinking indicators + progress bar
  *  - Fade out
  *
- * Total ~1.1s. Each letter draws in ~0.18s with ~0.06s stagger.
+ * On mobile: slightly longer duration to ensure all letters fully render.
+ * On desktop: fast and snappy.
  */
 export function LoadingScreen({ onComplete }: LoadingScreenProps) {
   const [done, setDone] = React.useState(false);
   const [reduced, setReduced] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       setReduced(
         window.matchMedia("(prefers-reduced-motion: reduce)").matches
       );
+      setIsMobile(
+        window.matchMedia("(max-width: 768px)").matches ||
+          /Mobi|Android/i.test(navigator.userAgent)
+      );
     }
   }, []);
 
-  const totalDuration = reduced ? 500 : 1100;
+  // Mobile gets slightly more time to ensure all letters render
+  const totalDuration = reduced ? 500 : isMobile ? 1800 : 1200;
 
   React.useEffect(() => {
     const t = setTimeout(() => {
@@ -53,7 +60,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            <div className="font-display text-3xl font-bold tracking-tight text-foreground">
+            <div className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground text-center px-4">
               Muhammad KL
             </div>
             <button
@@ -68,10 +75,10 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
     );
   }
 
-  // Fast stagger: each letter starts 0.06s after the previous, draws in 0.18s
-  const letterDur = 0.18;
-  const stagger = 0.06;
-  const startDelay = 0.05;
+  // Stagger timings — slightly slower on mobile for clarity
+  const letterDur = isMobile ? 0.22 : 0.18;
+  const stagger = isMobile ? 0.08 : 0.06;
+  const startDelay = 0.1;
 
   return (
     <AnimatePresence>
@@ -102,14 +109,16 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
           />
 
           {/* "Muhammad KL" drawn from connected paths */}
-          <div className="relative z-10 px-4">
+          <div className="relative z-10 w-full max-w-[600px] px-4 flex justify-center">
             <svg
-              width="min(560px, 90vw)"
-              height="80"
+              width="100%"
+              height="auto"
               viewBox="0 0 560 80"
               fill="none"
               className="relative z-10"
+              style={{ maxWidth: "560px" }}
               aria-label="Muhammad KL system boot"
+              preserveAspectRatio="xMidYMid meet"
             >
               {/* M — blue */}
               <motion.path
@@ -223,7 +232,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 transition={{ duration: letterDur, delay: startDelay + stagger * 9, ease: "easeInOut" }}
               />
 
-              {/* System pulse traveling across — fast */}
+              {/* System pulse traveling across */}
               <motion.circle
                 cx="10"
                 cy="70"
@@ -231,43 +240,43 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
                 fill="oklch(0.7 0.18 250)"
                 initial={{ opacity: 0, cx: 10 }}
                 animate={{ opacity: [0, 1, 0], cx: [10, 440] }}
-                transition={{ duration: 0.5, delay: 0.65, ease: "easeInOut" }}
+                transition={{ duration: 0.6, delay: startDelay + stagger * 10, ease: "easeInOut" }}
               />
             </svg>
           </div>
 
-          {/* Indicators — appear quickly */}
+          {/* Indicators */}
           <motion.div
-            className="relative z-10 mt-6 flex gap-6"
+            className="relative z-10 mt-6 flex gap-4 sm:gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.3 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
           >
             {indicators.map((ind, i) => (
               <motion.div
                 key={ind}
-                className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
+                className="flex items-center gap-1.5 font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-muted-foreground"
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 + i * 0.05, duration: 0.2 }}
+                transition={{ delay: 0.35 + i * 0.06, duration: 0.2 }}
               >
                 <motion.span
                   className="h-1.5 w-1.5 rounded-full bg-[oklch(0.62_0.18_250)]"
                   animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1, delay: 0.25 + i * 0.05, repeat: Infinity }}
+                  transition={{ duration: 1, delay: 0.35 + i * 0.06, repeat: Infinity }}
                 />
                 {ind}
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Progress bar — fills in 1s */}
-          <div className="relative z-10 mt-6 h-px w-56 overflow-hidden bg-white/10">
+          {/* Progress bar */}
+          <div className="relative z-10 mt-6 h-px w-48 sm:w-56 overflow-hidden bg-white/10">
             <motion.div
               className="h-full bg-[oklch(0.62_0.18_250)]"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
-              transition={{ duration: 1, ease: "linear" }}
+              transition={{ duration: totalDuration / 1000, ease: "linear" }}
               style={{ boxShadow: "0 0 8px oklch(0.62 0.18 250 / 80%)" }}
             />
           </div>

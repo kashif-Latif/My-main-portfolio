@@ -68,7 +68,7 @@ export function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-5 font-display text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight leading-[0.95]"
+              className="mt-5 font-display text-[2.25rem] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.0] sm:leading-[0.95]"
             >
               <span className="block text-foreground">Muhammad</span>
               <span className="block text-gradient-blue">Kashif Latif</span>
@@ -78,9 +78,9 @@ export function HomePage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-4 flex items-center gap-3 h-8 justify-center lg:justify-start"
+              className="mt-3 flex items-center gap-2 h-7 justify-center lg:justify-start"
             >
-              <span className="font-display text-xl sm:text-2xl md:text-3xl font-medium text-foreground/90">
+              <span className="font-display text-base sm:text-xl md:text-2xl lg:text-3xl font-medium text-foreground/90">
                 <RotatingRoles roles={profile.rotatingRoles} />
               </span>
             </motion.div>
@@ -89,7 +89,7 @@ export function HomePage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-5 max-w-2xl mx-auto lg:mx-0 text-base sm:text-lg text-muted-foreground leading-relaxed"
+              className="mt-4 max-w-2xl mx-auto lg:mx-0 text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed"
             >
               {profile.heroSubtitle}
             </motion.p>
@@ -98,11 +98,11 @@ export function HomePage() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-7 flex flex-col sm:flex-row sm:items-center gap-3 justify-center lg:justify-start"
+              className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 justify-center lg:justify-start w-full sm:w-auto"
             >
               <MagneticButton
                 onClick={() => navigate("projects")}
-                className="group rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background hover:bg-foreground/90 transition-colors"
+                className="group rounded-full bg-foreground px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-background hover:bg-foreground/90 transition-colors w-full sm:w-auto"
               >
                 Explore My Work
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -110,12 +110,12 @@ export function HomePage() {
 
               <MagneticButton
                 onClick={() => navigate("contact")}
-                className="group rounded-full border border-white/[0.12] bg-white/[0.02] px-6 py-3 text-sm font-medium text-foreground backdrop-blur-md hover:bg-white/[0.06] transition-colors"
+                className="group rounded-full border border-white/[0.12] bg-white/[0.02] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-foreground backdrop-blur-md hover:bg-white/[0.06] transition-colors w-full sm:w-auto"
               >
                 Let's Connect
               </MagneticButton>
 
-              <ResumeMenu variant="outline" />
+              <ResumeMenu variant="outline" className="w-full sm:w-auto" />
             </motion.div>
 
             <motion.div
