@@ -4,7 +4,7 @@ import { HeroFallback } from "./hero-fallback";
 
 import * as React from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdaptiveDpr, PerspectiveCamera } from "@react-three/drei";
+import { PerspectiveCamera } from "@react-three/drei";
 import { useTheme } from "next-themes";
 import * as THREE from "three";
 
@@ -89,37 +89,65 @@ const IS_MOBILE =
   (window.matchMedia("(max-width: 768px)").matches ||
     /Mobi|Android/i.test(navigator.userAgent));
 
-/** One quality tier per device class — every count lives here. */
-const TIER = IS_MOBILE
-  ? { dpr: 1, nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
-  : { dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
-
-/* Frame-rate ladder. We START at 60 and only step down if the device
- * demonstrably can't hold it.
+/* Render at the screen's REAL pixel density.
  *
- * The previous version pinned everything to a flat 30 fps. That was safe but
- * wrong for THIS scene: the core rotates continuously, and continuous rotation
- * is exactly the motion where 30 fps reads as steppy. Capable machines should
- * get the smooth version; only slow ones pay. Below the last rung the scene
- * gives up and hands over to the CSS fallback. */
-const FPS_LADDER = [60, 40, 30, 24] as const;
+ * The previous version pinned mobile to dpr 1. On a phone with a 3x screen
+ * that renders the scene at a third of the resolution and lets the browser
+ * upscale it — which is exactly why it looked like a 144p video. 2 is the
+ * standard ceiling: past it the extra fragments buy nothing the eye can see,
+ * but they cost fill rate linearly. */
+const MAX_DPR =
+  typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 
-/* ---------- Adaptive frame-rate controller ----------
+/* Geometry counts. These are VERTEX cost, which is cheap — a few hundred more
+ * triangles is nothing next to the per-pixel shading. Mobile is trimmed only
+ * enough to keep the silhouette honest, not to save frames. */
+const TIER = IS_MOBILE
+  ? { nodes: 7, particles: 260, fragments: 4, sphereSegs: 12, particleSize: 0.026 }
+  : { nodes: 8, particles: 320, fragments: 5, sphereSegs: 14, particleSize: 0.024 };
+
+/* Quality ladder, walked top to bottom as the device proves it can't keep up.
+ *
+ * The ORDER here is the whole design: frame rate degrades first and
+ * resolution last. Going 60 -> 40 fps on a slow ambient rotation is barely
+ * perceptible; dropping resolution is immediately obvious as blur. So we spend
+ * every bit of headroom on sharpness and give away smoothness first.
+ *
+ * `dprScale` multiplies MAX_DPR — the last two rungs are the emergency exits
+ * before handing over to the CSS fallback entirely. */
+const QUALITY_LADDER = [
+  { fps: 60, dprScale: 1 },
+  { fps: 40, dprScale: 1 },
+  { fps: 30, dprScale: 1 },
+  { fps: 30, dprScale: 0.8 },
+  { fps: 24, dprScale: 0.65 },
+  // Last resort. At MAX_DPR 2 this is still dpr 1 — what the scene used to
+  // ship at for every phone — so dropping the canvas is genuinely the final
+  // option, not the second one.
+  { fps: 24, dprScale: 0.5 },
+] as const;
+
+/** Index of the last rung that still renders at full resolution. */
+const LAST_FULL_RES_RUNG = 2;
+
+/* ---------- Adaptive quality controller ----------
  * Drives `frameloop="demand"` at the current target, watches how well the
- * device actually keeps up, and steps down the ladder when it can't. */
-function AdaptiveFrameRate({ onSlow }: { onSlow: () => void }) {
+ * device keeps up, and walks down QUALITY_LADDER when it can't. */
+function AdaptiveQuality({ onSlow }: { onSlow: () => void }) {
   const invalidate = useThree((s) => s.invalidate);
+  const setDpr = useThree((s) => s.setDpr);
 
   const rung = React.useRef(0);
-  const targetFps = React.useRef<number>(FPS_LADDER[0]);
+  const targetFps = React.useRef<number>(QUALITY_LADDER[0].fps);
   const samples = React.useRef<number[]>([]);
   const lastRender = React.useRef(0);
   const measuring = React.useRef(false);
   const settled = React.useRef(false);
+  const strikes = React.useRef(0);
 
-  /* Don't judge the device during the first second and a half. Chunk parse,
-   * hydration and shader compilation all land there, and measuring through
-   * them would demote a perfectly capable machine on load-time noise alone. */
+  /* Don't judge the device during the first second. Chunk parse, hydration and
+   * shader compilation all land there, and measuring through them would demote
+   * a perfectly capable machine on load-time noise alone. */
   React.useEffect(() => {
     const t = setTimeout(() => {
       measuring.current = true;
@@ -159,38 +187,59 @@ function AdaptiveFrameRate({ onSlow }: { onSlow: () => void }) {
     if (samples.current.length < 30) return;
 
     const sorted = samples.current.slice().sort((a, b) => a - b);
-    const median = sorted[sorted.length >> 1];
+    const p75 = sorted[Math.floor(sorted.length * 0.75)];
     samples.current.length = 0;
 
-    // Holding the target comfortably? Stop measuring; the cost of the check
-    // itself is not worth paying forever.
-    if (median <= (1000 / targetFps.current) * 1.45) {
+    // Holding the target comfortably? Stop measuring; the check itself is not
+    // worth paying for forever.
+    if (p75 <= (1000 / targetFps.current) * 1.5) {
       settled.current = true;
       return;
     }
 
-    /* Jump straight to the rung this device can actually hold rather than
-     * stepping down one at a time. Stepping meant up to three measurement
-     * windows of visible jank before settling; this converges in one. */
-    const achievableFps = 1000 / median;
+    /* One bad window is not proof. Image decodes, a long scroll, a GC pause or
+     * another tab waking up all produce a single slow window on hardware that
+     * is otherwise perfectly capable. Demoting on that would cost a good
+     * device its sharpness permanently, since the ladder never climbs back.
+     * Two consecutive bad windows is the evidence bar. */
+    strikes.current += 1;
+    if (strikes.current < 2) return;
+    strikes.current = 0;
+
+    const achievableFps = 1000 / p75;
     let next = rung.current;
+
+    /* Inside the full-resolution region, jump straight to the rung this device
+     * can hold — stepping one at a time meant several windows of visible jank
+     * before settling. */
     while (
-      next < FPS_LADDER.length - 1 &&
-      FPS_LADDER[next] > achievableFps * 1.1
+      next < LAST_FULL_RES_RUNG &&
+      QUALITY_LADDER[next].fps > achievableFps * 1.1
     ) {
       next += 1;
     }
 
+    /* Below that we give up pixels, and there the jump has to become a single
+     * step: halving the resolution changes what the device can achieve, so the
+     * fps we just measured no longer predicts the next rung. Step once, then
+     * re-measure. (It also has to be a step rather than a search because these
+     * rungs repeat an fps value — an fps-only comparison can't tell them
+     * apart and would skip straight past the 0.75 resolution tier.) */
     if (next === rung.current) {
-      // Already on the lowest useful rung and still missing it — hand over
-      // to the CSS fallback rather than serving a stuttering canvas.
-      settled.current = true;
-      onSlow();
-      return;
+      if (rung.current >= QUALITY_LADDER.length - 1) {
+        // Lowest rung and still missing it — hand over to the CSS fallback
+        // rather than serving a stuttering canvas.
+        settled.current = true;
+        onSlow();
+        return;
+      }
+      next = rung.current + 1;
     }
 
+    const step = QUALITY_LADDER[next];
     rung.current = next;
-    targetFps.current = FPS_LADDER[next];
+    targetFps.current = step.fps;
+    if (step.dprScale < 1) setDpr(MAX_DPR * step.dprScale);
   });
 
   return null;
@@ -419,7 +468,7 @@ function ParticleField({ palette }: { palette: Palette }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={IS_MOBILE ? 0.032 : 0.024}
+        size={TIER.particleSize}
         vertexColors
         transparent
         opacity={palette.particleOpacity}
@@ -528,7 +577,7 @@ function Scene({
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
-      <AdaptiveFrameRate onSlow={onSlow} />
+      <AdaptiveQuality onSlow={onSlow} />
       <CameraRig mouse={mouse} scroll={scroll} />
 
       {/* No lights: every material here is unlit by design. */}
@@ -600,17 +649,18 @@ export function HeroScene({ onSlow }: { onSlow: () => void }) {
     <div ref={containerRef} className="absolute inset-0" aria-hidden="true">
       {visible && (
         <Canvas
-          dpr={[1, TIER.dpr]}
+          dpr={MAX_DPR}
           frameloop="demand"
           gl={{
-            antialias: false,
+            // At dpr 2 the supersampling already smooths edges; MSAA on top
+            // is pure cost. Below that the wireframe needs the help.
+            antialias: MAX_DPR < 2,
             alpha: true,
             powerPreference: "default",
             stencil: false,
             depth: true,
           }}
         >
-          <AdaptiveDpr pixelated />
           <Scene mouse={mouse} scroll={scroll} palette={palette} onSlow={onSlow} />
         </Canvas>
       )}

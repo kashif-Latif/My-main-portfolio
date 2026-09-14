@@ -117,6 +117,91 @@ That gate has to live outside `hero-scene.tsx` — a check written inside that
 module only runs after the module has downloaded, by which point the bandwidth
 is already spent.
 
+## Resolution — why mobile looked like 144p
+
+The first performance pass pinned mobile to `dpr: 1`. On a phone with a 3x
+screen that renders the scene at **a third** of the display resolution and
+lets the browser upscale it. `AdaptiveDpr pixelated` made it worse by
+switching the upscale to nearest-neighbour, so it was blocky as well as soft.
+
+It now renders at the screen's real density, capped at 2:
+
+```ts
+const MAX_DPR = Math.min(window.devicePixelRatio || 1, 2);
+```
+
+A 390x844 phone at dpr 3 now gets a **780x1688** canvas instead of 390x844 —
+4x the pixels. Past dpr 2 the extra fragments cost fill rate linearly and buy
+nothing the eye can resolve, which is why 2 is the ceiling. MSAA is enabled
+only when `MAX_DPR < 2`; above that the supersampling already smooths edges and
+MSAA on top is pure cost.
+
+Geometry counts went back up on mobile too (7 nodes, 260 particles, 12-segment
+spheres). Those are *vertex* cost, which is negligible — it was never where the
+frames went.
+
+## Adaptive quality — what degrades, and in what order
+
+The ladder degrades **frame rate first and resolution last**:
+
+```ts
+const QUALITY_LADDER = [
+  { fps: 60, dprScale: 1    },   // sharp + smooth
+  { fps: 40, dprScale: 1    },   // sharp, slightly less smooth
+  { fps: 30, dprScale: 1    },   // sharp, cinematic
+  { fps: 30, dprScale: 0.8  },   // first softening
+  { fps: 24, dprScale: 0.65 },
+  { fps: 24, dprScale: 0.5  },   // last resort — still 3D
+];
+```
+
+That order is the whole design. Dropping a slow ambient rotation from 60 to 40
+fps is barely perceptible; dropping resolution is *immediately* obvious as
+blur. So every bit of headroom is spent on sharpness and smoothness is given
+away first. Even the bottom rung (dpr 1 at MAX_DPR 2) is what the scene used to
+ship at for every phone — so losing the canvas entirely is genuinely the final
+option, not the second one.
+
+Three rules keep it from demoting a device that's actually fine:
+
+- **It decides on p75, not the median.** The median says "the typical frame is
+  fine" and settles happily while a quarter of frames land 80 ms late — which
+  is exactly what the eye reads as stutter.
+- **Two consecutive bad windows.** One slow window happens on perfectly capable
+  hardware: an image decode, a long scroll, a GC pause, another tab waking up.
+  The ladder never climbs back, so demoting on a single blip would cost a good
+  device its sharpness permanently.
+- **It waits 900 ms before judging at all**, so chunk parse and shader
+  compilation can't demote a fast machine.
+
+Inside the full-resolution region it jumps straight to the rung the device can
+hold. Below it, it steps one tier at a time and re-measures — halving the
+resolution changes what's achievable, so the fps just measured no longer
+predicts the next rung.
+
+## Software WebGL
+
+A WebGL context alone doesn't mean the machine can render. With no usable GPU —
+some low-end Androids, locked-down desktops, VMs, acceleration disabled —
+Chrome silently falls back to **SwiftShader** and rasterises every pixel on the
+CPU. It "works" and it is never smooth.
+
+`hero-visual.tsx` probes `WEBGL_debug_renderer_info` on a throwaway 1x1 context
+*before* the dynamic import. Software renderer → CSS fallback, and three.js is
+never downloaded.
+
+This also matters for reading the numbers in this document: they were measured
+in a container with no GPU, so everything above ran through SwiftShader. Those
+figures overstate GPU cost badly and understate what real hardware does.
+
+Verified across all three paths:
+
+| device | three.js | canvas |
+|---|---|---|
+| software renderer | **not downloaded** | CSS fallback |
+| phone, dpr 3, real GPU | downloaded | **780x1688 @ dpr 2** |
+| desktop, dpr 2, real GPU | downloaded | **2880x1800 @ dpr 2** |
+
 ## Adaptive frame rate
 
 The first pass pinned the scene to a flat 30 fps. That was safe but wrong for
@@ -154,11 +239,13 @@ the tab is hidden (`IntersectionObserver` + `visibilitychange`).
 Everything lives in one object at the top of `src/components/3d/hero-scene.tsx`:
 
 ```ts
-const TIER = IS_MOBILE
-  ? { dpr: 1,   nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
-  : { dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
+const MAX_DPR = Math.min(window.devicePixelRatio || 1, 2);
 
-const FPS_LADDER = [60, 40, 30, 24];
+const TIER = IS_MOBILE
+  ? { nodes: 7, particles: 260, fragments: 4, sphereSegs: 12, particleSize: 0.026 }
+  : { nodes: 8, particles: 320, fragments: 5, sphereSegs: 14, particleSize: 0.024 };
+
+const QUALITY_LADDER = [ /* fps + dprScale, see above */ ];
 ```
 
 The intro length is `totalDuration` in `loading-screen.tsx`; the

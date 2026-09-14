@@ -34,11 +34,49 @@ type Connection = {
  */
 const TOO_SLOW = ["slow-2g", "2g"];
 
+/**
+ * Is WebGL present AND hardware-accelerated?
+ *
+ * A context alone isn't enough. When a machine has no usable GPU — some
+ * low-end Androids, locked-down corporate desktops, VMs, browsers with
+ * acceleration disabled — Chrome silently falls back to SwiftShader and
+ * rasterises every pixel on the CPU. It "works", and it is never smooth: a
+ * full-screen canvas at dpr 2 is millions of pixels per frame of pure CPU.
+ *
+ * The probe context is a throwaway 1x1 and is released immediately.
+ */
+function hasHardwareWebGL(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = (canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+    if (!gl) return false;
+
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    if (debugInfo) {
+      const renderer = String(
+        gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) ?? ""
+      );
+      if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer)) {
+        return false;
+      }
+    }
+
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function skipHeavyVisual(): boolean {
   if (typeof window === "undefined") return true;
 
   // Someone who asked for less motion should never pay for a 3D scene.
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
+
+  // No GPU means no smooth WebGL, at any resolution. Don't spend the download.
+  if (!hasHardwareWebGL()) return true;
 
   const connection = (
     navigator as Navigator & { connection?: Connection }
