@@ -79,13 +79,72 @@ Counts also dropped: 600 → 320 particles (160 mobile), 9 → 8 nodes (5 mobile
   `position: fixed` element makes the browser re-rasterise it on scroll. The
   blur is gone; they look the same.
 
+## Why the 3D takes a moment to appear
+
+Measured from navigationStart:
+
+| stage | desktop, fast net | mid phone, Fast 3G |
+|---|---|---|
+| first paint (CSS fallback visible) | 396 ms | 1168 ms |
+| three.js chunk finished downloading | 581 ms | 4393 ms |
+| loading screen finished | 2382 ms | 4933 ms |
+| 3D canvas mounted & drawing | 2382 ms | 4933 ms |
+
+Two different causes depending on where you are:
+
+**On desktop the 3D is ready at ~0.6 s — the wait is the intro animation.**
+`LoadingScreen` runs for 1500 ms plus a 400 ms fade. The canvas mounts the
+instant it clears. It only plays once per browser session (`sessionStorage`),
+so refreshes go straight in, and there's a Skip button. To change it, edit
+`totalDuration` in `src/components/portfolio/loading-screen.tsx`.
+
+**On a phone over 3G the download is the real cost.** three.js is ~875 KB raw
+/ ~231 KB gzipped, which is about 3.2 s of Fast-3G. Nothing is blocked while it
+happens — the CSS fallback is on screen from 1.2 s — but the swap to WebGL
+can't happen sooner than the bytes arrive.
+
+The hero is never empty at any point: `HeroFallback` (pure CSS + inline SVG,
+no JS) paints at first paint and stays until WebGL is genuinely ready.
+
+### Not downloading it at all
+
+`src/components/3d/hero-visual.tsx` decides *before* the dynamic import fires.
+On Data Saver, a 2G-class link, or `prefers-reduced-motion`, the three.js chunk
+is never requested and the CSS fallback is the final state. Verified: with
+Save-Data on, 0 KB of three.js crosses the wire.
+
+That gate has to live outside `hero-scene.tsx` — a check written inside that
+module only runs after the module has downloaded, by which point the bandwidth
+is already spent.
+
+## Adaptive frame rate
+
+The first pass pinned the scene to a flat 30 fps. That was safe but wrong for
+this scene specifically: the core rotates *continuously*, and continuous
+rotation is the exact motion where 30 fps reads as steppy. It looked like lag
+even though the numbers were fine.
+
+It now starts at 60 and steps down only when the device demonstrably can't
+hold it:
+
+```ts
+const FPS_LADDER = [60, 40, 30, 24];
+```
+
+It waits 900 ms before judging (so chunk parse and shader compile can't demote
+a fast machine), samples 30 rendered frames, and jumps **straight to the rung
+the device can actually hold** rather than stepping down one at a time — one
+measurement window instead of three, so there's no drawn-out stutter while it
+decides. Below the last rung it hands over to the CSS fallback.
+
+Measured: 60 fps on unthrottled desktop, stepping to 40 under 4x CPU
+throttling, 30 on a throttled phone. The canvas is never falsely downgraded.
+
 ## The safety net
 
-`PerfWatchdog` samples frame intervals for the first ~40 rendered frames
-(skipping the first 8, which include shader compile). If the median frame is
-more than 2.2× the target budget, the canvas unmounts itself and the pure-CSS
-`HeroFallback` takes over. Nobody gets a janky page because their device is
-slow.
+If the device can't hold even the lowest rung of the ladder, the canvas
+unmounts itself and the pure-CSS `HeroFallback` takes over. Nobody gets a janky
+page because their device is slow.
 
 The scene also stops rendering entirely when the hero scrolls out of view or
 the tab is hidden (`IntersectionObserver` + `visibilitychange`).
@@ -96,9 +155,14 @@ Everything lives in one object at the top of `src/components/3d/hero-scene.tsx`:
 
 ```ts
 const TIER = IS_MOBILE
-  ? { fps: 24, dpr: 1,   nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
-  : { fps: 30, dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
+  ? { dpr: 1,   nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
+  : { dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
+
+const FPS_LADDER = [60, 40, 30, 24];
 ```
+
+The intro length is `totalDuration` in `loading-screen.tsx`; the
+slow-connection cut-off is `TOO_SLOW` in `hero-visual.tsx`.
 
 ## Rule of thumb
 

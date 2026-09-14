@@ -91,21 +91,50 @@ const IS_MOBILE =
 
 /** One quality tier per device class — every count lives here. */
 const TIER = IS_MOBILE
-  ? { fps: 24, dpr: 1, nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
-  : { fps: 30, dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
+  ? { dpr: 1, nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
+  : { dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
 
-const FRAME_BUDGET_MS = 1000 / TIER.fps;
+/* Frame-rate ladder. We START at 60 and only step down if the device
+ * demonstrably can't hold it.
+ *
+ * The previous version pinned everything to a flat 30 fps. That was safe but
+ * wrong for THIS scene: the core rotates continuously, and continuous rotation
+ * is exactly the motion where 30 fps reads as steppy. Capable machines should
+ * get the smooth version; only slow ones pay. Below the last rung the scene
+ * gives up and hands over to the CSS fallback. */
+const FPS_LADDER = [60, 40, 30, 24] as const;
 
-/* ---------- Fixed-rate driver for frameloop="demand" ---------- */
-function FrameLimiter() {
+/* ---------- Adaptive frame-rate controller ----------
+ * Drives `frameloop="demand"` at the current target, watches how well the
+ * device actually keeps up, and steps down the ladder when it can't. */
+function AdaptiveFrameRate({ onSlow }: { onSlow: () => void }) {
   const invalidate = useThree((s) => s.invalidate);
+
+  const rung = React.useRef(0);
+  const targetFps = React.useRef<number>(FPS_LADDER[0]);
+  const samples = React.useRef<number[]>([]);
+  const lastRender = React.useRef(0);
+  const measuring = React.useRef(false);
+  const settled = React.useRef(false);
+
+  /* Don't judge the device during the first second and a half. Chunk parse,
+   * hydration and shader compilation all land there, and measuring through
+   * them would demote a perfectly capable machine on load-time noise alone. */
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      measuring.current = true;
+    }, 900);
+    return () => clearTimeout(t);
+  }, []);
 
   React.useEffect(() => {
     let raf = 0;
     let last = 0;
     const loop = (t: number) => {
       raf = requestAnimationFrame(loop);
-      if (t - last >= FRAME_BUDGET_MS) {
+      // 2ms tolerance, otherwise rAF jitter makes a 60fps target miss every
+      // other frame and settle at 30.
+      if (t - last >= 1000 / targetFps.current - 2) {
         last = t;
         invalidate();
       }
@@ -114,36 +143,54 @@ function FrameLimiter() {
     return () => cancelAnimationFrame(raf);
   }, [invalidate]);
 
-  return null;
-}
-
-/* ---------- Watchdog: bail out on devices that still can't cope ---------- */
-function PerfWatchdog({ onSlow }: { onSlow: () => void }) {
-  const samples = React.useRef<number[]>([]);
-  const last = React.useRef(0);
-  const settled = React.useRef(0);
-  const done = React.useRef(false);
-
   useFrame(() => {
-    if (done.current) return;
     const now = performance.now();
 
-    // Skip the first frames — shader compile and buffer upload spike.
-    if (settled.current < 8) {
-      settled.current += 1;
-      last.current = now;
+    if (settled.current || !measuring.current) {
+      lastRender.current = now;
       return;
     }
 
-    if (last.current) samples.current.push(now - last.current);
-    last.current = now;
+    const dt = now - lastRender.current;
+    lastRender.current = now;
+    if (dt <= 0 || dt > 1000) return; // tab was backgrounded — not a real sample
 
-    if (samples.current.length >= 40) {
-      done.current = true;
-      const sorted = samples.current.sort((a, b) => a - b);
-      const median = sorted[sorted.length >> 1];
-      if (median > FRAME_BUDGET_MS * 2.2) onSlow();
+    samples.current.push(dt);
+    if (samples.current.length < 30) return;
+
+    const sorted = samples.current.slice().sort((a, b) => a - b);
+    const median = sorted[sorted.length >> 1];
+    samples.current.length = 0;
+
+    // Holding the target comfortably? Stop measuring; the cost of the check
+    // itself is not worth paying forever.
+    if (median <= (1000 / targetFps.current) * 1.45) {
+      settled.current = true;
+      return;
     }
+
+    /* Jump straight to the rung this device can actually hold rather than
+     * stepping down one at a time. Stepping meant up to three measurement
+     * windows of visible jank before settling; this converges in one. */
+    const achievableFps = 1000 / median;
+    let next = rung.current;
+    while (
+      next < FPS_LADDER.length - 1 &&
+      FPS_LADDER[next] > achievableFps * 1.1
+    ) {
+      next += 1;
+    }
+
+    if (next === rung.current) {
+      // Already on the lowest useful rung and still missing it — hand over
+      // to the CSS fallback rather than serving a stuttering canvas.
+      settled.current = true;
+      onSlow();
+      return;
+    }
+
+    rung.current = next;
+    targetFps.current = FPS_LADDER[next];
   });
 
   return null;
@@ -481,8 +528,7 @@ function Scene({
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
-      <FrameLimiter />
-      <PerfWatchdog onSlow={onSlow} />
+      <AdaptiveFrameRate onSlow={onSlow} />
       <CameraRig mouse={mouse} scroll={scroll} />
 
       {/* No lights: every material here is unlit by design. */}

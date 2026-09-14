@@ -13,19 +13,10 @@ import {
   Phone,
 } from "lucide-react";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-import { HeroFallback } from "@/components/3d/hero-fallback";
-
-// PERF FIX: hero-scene pulls in Three.js (~1.2 MB raw / ~150 KB gzip).
-// It used to be imported statically, so every visitor downloaded and
-// parsed all of it before anything was interactive. It now loads lazily
-// after first paint, with the pure-CSS fallback showing in the meantime
-// — visually seamless, and the initial bundle drops by over a megabyte.
-const HeroSceneWithFallback = dynamic(
-  () =>
-    import("@/components/3d/hero-scene").then((m) => m.HeroSceneWithFallback),
-  { ssr: false, loading: () => <HeroFallback /> }
-);
+// The hero visual decides for itself whether this device gets WebGL, and only
+// then fetches three.js (~231 KB gzip). Until it does — and on devices that
+// never will — the pure-CSS fallback is what renders. See hero-visual.tsx.
+import { HeroVisual } from "@/components/3d/hero-visual";
 import { RotatingRoles } from "@/components/portfolio/rotating-roles";
 import { BrandButton } from "@/components/portfolio/brand-button";
 import { Marquee } from "@/components/portfolio/marquee";
@@ -68,7 +59,7 @@ export function HomePage() {
         aria-label="Hero"
       >
         <div className="absolute inset-0">
-          <HeroSceneWithFallback />
+          <HeroVisual />
         </div>
 
         {/* Ground the 3D scene into the page colour so type stays readable */}
