@@ -5,12 +5,13 @@ import { HeroFallback } from "./hero-fallback";
 import * as React from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { AdaptiveDpr, AdaptiveEvents, PerspectiveCamera } from "@react-three/drei";
+import { useTheme } from "next-themes";
 import * as THREE from "three";
 
 /* ============================================================
  * 3D Hero Scene — Floating AI Core
  *
- * Design intent:
+ * Design intent (unchanged from the original):
  *  - Central glowing icosahedron (the "intelligence core")
  *  - Orbiting nodes representing connected systems
  *  - Thin lines connecting core <-> nodes
@@ -18,13 +19,60 @@ import * as THREE from "three";
  *  - Floating code fragments
  *  - Reacts subtly to mouse + scroll
  *
+ * Theming:
+ *  Colours are no longer baked into the materials. A single amber ramp is
+ *  swapped per theme, because a value that reads well on the espresso ground
+ *  disappears on cream — the light set is darker and more saturated so the
+ *  geometry keeps its contrast against the paper background.
+ *
  * Performance:
  *  - Procedural geometry only (no GLTF)
- *  - Instanced particles
  *  - Adaptive DPR + event throttling
  *  - Pauses when tab hidden or offscreen
- *  - Reduced-motion fallback handled by parent
- * ============================================================ */
+ *  - Reduced-motion fallback handled by the wrapper
+ * ========================================================== */
+
+type Palette = {
+  core: string;
+  wire: string;
+  glow: string;
+  nodes: [string, string, string];
+  lines: [string, string];
+  particles: [string, string, string];
+  light: string;
+  fill: string;
+  particleOpacity: number;
+  lineOpacity: number;
+};
+
+const PALETTES: Record<"light" | "dark", Palette> = {
+  // Deeper, more saturated: has to hold up against a cream page.
+  light: {
+    core: "#C77C18",
+    wire: "#A96410",
+    glow: "#D89A3A",
+    nodes: ["#B5670E", "#A14522", "#9C7A10"],
+    lines: ["#B5670E", "#A14522"],
+    particles: ["#B5670E", "#A14522", "#9C7A10"],
+    light: "#E0A53F",
+    fill: "#C0752A",
+    particleOpacity: 0.55,
+    lineOpacity: 0.22,
+  },
+  // Brighter, emissive: reads as light against the espresso ground.
+  dark: {
+    core: "#E9A13B",
+    wire: "#F5B44A",
+    glow: "#E4762F",
+    nodes: ["#F5B44A", "#E4762F", "#F2C94C"],
+    lines: ["#F5B44A", "#E4762F"],
+    particles: ["#F5B44A", "#E4762F", "#F2C94C"],
+    light: "#F5B44A",
+    fill: "#E4762F",
+    particleOpacity: 0.7,
+    lineOpacity: 0.18,
+  },
+};
 
 const REDUCED_MOTION =
   typeof window !== "undefined" &&
@@ -39,9 +87,11 @@ const IS_MOBILE =
 function Core({
   mouse,
   scroll,
+  palette,
 }: {
-  mouse: React.MutableRefObject<{ x: number; y: number }>;
-  scroll: React.MutableRefObject<number>;
+  mouse: React.RefObject<{ x: number; y: number }>;
+  scroll: React.RefObject<number>;
+  palette: Palette;
 }) {
   const meshRef = React.useRef<THREE.Mesh>(null);
   const wireRef = React.useRef<THREE.Mesh>(null);
@@ -51,7 +101,6 @@ function Core({
     if (!meshRef.current || !wireRef.current || !innerRef.current) return;
     const t = state.clock.elapsedTime;
 
-    // Gentle rotation
     meshRef.current.rotation.x = t * 0.15 + mouse.current.y * 0.2;
     meshRef.current.rotation.y = t * 0.2 + mouse.current.x * 0.3;
 
@@ -61,14 +110,12 @@ function Core({
     innerRef.current.rotation.x = t * 0.3;
     innerRef.current.rotation.y = t * 0.4;
 
-    // Subtle scale pulse + scroll parallax
     const pulse = 1 + Math.sin(t * 0.8) * 0.04;
     const scale = pulse - scroll.current * 0.4;
     meshRef.current.scale.setScalar(Math.max(0.4, scale));
     wireRef.current.scale.setScalar(Math.max(0.5, scale * 1.08));
     innerRef.current.scale.setScalar(Math.max(0.3, scale * 0.7));
 
-    // Parallax drift
     meshRef.current.position.y = -scroll.current * 0.6 + mouse.current.y * 0.15;
     wireRef.current.position.y = -scroll.current * 0.5 + mouse.current.y * 0.1;
     innerRef.current.position.y = -scroll.current * 0.7;
@@ -80,11 +127,11 @@ function Core({
       <mesh ref={meshRef}>
         <icosahedronGeometry args={[1.0, 1]} />
         <meshStandardMaterial
-          color="#3a6df0"
-          emissive="#3a6df0"
+          color={palette.core}
+          emissive={palette.core}
           emissiveIntensity={0.5}
           transparent
-          opacity={0.18}
+          opacity={0.2}
           roughness={0.2}
           metalness={0.6}
         />
@@ -93,26 +140,16 @@ function Core({
       {/* Wireframe overlay */}
       <mesh ref={wireRef}>
         <icosahedronGeometry args={[1.05, 1]} />
-        <meshBasicMaterial
-          color="#6fa8ff"
-          wireframe
-          transparent
-          opacity={0.5}
-        />
+        <meshBasicMaterial color={palette.wire} wireframe transparent opacity={0.55} />
       </mesh>
 
       {/* Inner glow sphere */}
       <mesh ref={innerRef}>
         <sphereGeometry args={[0.5, 24, 24]} />
-        <meshBasicMaterial
-          color="#9b8cff"
-          transparent
-          opacity={0.35}
-        />
+        <meshBasicMaterial color={palette.glow} transparent opacity={0.35} />
       </mesh>
 
-      {/* Point light inside the core */}
-      <pointLight color="#6fa8ff" intensity={2.5} distance={6} decay={2} />
+      <pointLight color={palette.light} intensity={2.5} distance={6} decay={2} />
     </group>
   );
 }
@@ -120,13 +157,13 @@ function Core({
 /* ---------- Orbiting nodes + connecting lines ---------- */
 function OrbitSystem({
   mouse,
+  palette,
 }: {
-  mouse: React.MutableRefObject<{ x: number; y: number }>;
+  mouse: React.RefObject<{ x: number; y: number }>;
+  palette: Palette;
 }) {
   const groupRef = React.useRef<THREE.Group>(null);
-  const lineRefs = React.useRef<THREE.Line[]>([]);
 
-  // Generate fixed positions for orbiting nodes
   const nodes = React.useMemo(() => {
     const count = IS_MOBILE ? 6 : 9;
     return Array.from({ length: count }).map((_, i) => {
@@ -141,28 +178,42 @@ function OrbitSystem({
         ),
         speed: 0.15 + (i % 4) * 0.05,
         size: 0.04 + (i % 3) * 0.02,
-        color: i % 3 === 0 ? "#6fa8ff" : i % 3 === 1 ? "#9b8cff" : "#5fd9e8",
+        color: palette.nodes[i % 3],
       };
     });
-  }, []);
+  }, [palette]);
 
-  // Pre-compute line geometries that we'll update each frame
   const lineMaterials = React.useMemo(
     () =>
       nodes.map(
         (_, i) =>
           new THREE.LineBasicMaterial({
-            color: i % 2 === 0 ? "#6fa8ff" : "#9b8cff",
+            color: palette.lines[i % 2],
             transparent: true,
-            opacity: 0.18,
+            opacity: palette.lineOpacity,
           })
+      ),
+    [nodes, palette]
+  );
+
+  const lineGeometries = React.useMemo(
+    () =>
+      nodes.map(() =>
+        new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(0, 0, 0),
+        ])
       ),
     [nodes]
   );
 
-  const lineGeometries = React.useMemo(
-    () => nodes.map(() => new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 0)])),
-    [nodes]
+  // three.js objects are not garbage collected with the React tree.
+  React.useEffect(
+    () => () => {
+      lineMaterials.forEach((m) => m.dispose());
+      lineGeometries.forEach((g) => g.dispose());
+    },
+    [lineMaterials, lineGeometries]
   );
 
   useFrame((state) => {
@@ -172,7 +223,6 @@ function OrbitSystem({
     groupRef.current.rotation.y = t * 0.05 + mouse.current.x * 0.25;
     groupRef.current.rotation.x = mouse.current.y * 0.15;
 
-    // Update each node + its line
     groupRef.current.children.forEach((child, i) => {
       if (i >= nodes.length) return;
       const node = nodes[i];
@@ -185,9 +235,7 @@ function OrbitSystem({
       mesh.position.y = node.position.y + Math.sin(orbitT * 1.3) * orbitRadius;
       mesh.position.z = node.position.z + Math.sin(orbitT) * orbitRadius;
 
-      // Update line geometry: from origin to node
-      const points = [new THREE.Vector3(0, 0, 0), mesh.position.clone()];
-      lineGeometries[i].setFromPoints(points);
+      lineGeometries[i].setFromPoints([new THREE.Vector3(0, 0, 0), mesh.position.clone()]);
     });
   });
 
@@ -207,34 +255,29 @@ function OrbitSystem({
   );
 }
 
-/* ---------- Particle field (instanced) ---------- */
-function ParticleField() {
+/* ---------- Particle field ---------- */
+function ParticleField({ palette }: { palette: Palette }) {
   const pointsRef = React.useRef<THREE.Points>(null);
 
   const { positions, colors } = React.useMemo(() => {
     const count = IS_MOBILE ? 250 : 600;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
-    const palette = [
-      new THREE.Color("#6fa8ff"),
-      new THREE.Color("#9b8cff"),
-      new THREE.Color("#5fd9e8"),
-    ];
+    const swatches = palette.particles.map((c) => new THREE.Color(c));
     for (let i = 0; i < count; i++) {
-      // Spread in a spherical shell
       const r = 3.5 + Math.random() * 4;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
       positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
       positions[i * 3 + 2] = r * Math.cos(phi);
-      const c = palette[Math.floor(Math.random() * palette.length)];
+      const c = swatches[Math.floor(Math.random() * swatches.length)];
       colors[i * 3] = c.r;
       colors[i * 3 + 1] = c.g;
       colors[i * 3 + 2] = c.b;
     }
     return { positions, colors };
-  }, []);
+  }, [palette]);
 
   useFrame((state) => {
     if (!pointsRef.current) return;
@@ -258,10 +301,10 @@ function ParticleField() {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={IS_MOBILE ? 0.025 : 0.018}
+        size={IS_MOBILE ? 0.028 : 0.022}
         vertexColors
         transparent
-        opacity={0.7}
+        opacity={palette.particleOpacity}
         sizeAttenuation
         depthWrite={false}
       />
@@ -270,13 +313,11 @@ function ParticleField() {
 }
 
 /* ---------- Floating code fragments ---------- */
-function CodeFragments() {
+function CodeFragments({ palette }: { palette: Palette }) {
   const groupRef = React.useRef<THREE.Group>(null);
   const fragments = React.useMemo(() => {
-    const labels = ["{ }", "</>", "()", "[]", "=>", "ai", "ml", "fn"];
     const count = IS_MOBILE ? 4 : 7;
-    return Array.from({ length: count }).map((_, i) => ({
-      label: labels[i % labels.length],
+    return Array.from({ length: count }).map(() => ({
       position: [
         (Math.random() - 0.5) * 6,
         (Math.random() - 0.5) * 4,
@@ -304,13 +345,12 @@ function CodeFragments() {
     <group ref={groupRef}>
       {fragments.map((f, i) => (
         <group key={i} position={f.position} scale={f.scale}>
-          {/* Tiny plane with a code symbol — using a simple mesh */}
           <mesh>
             <planeGeometry args={[0.5, 0.2]} />
             <meshBasicMaterial
-              color={i % 2 === 0 ? "#6fa8ff" : "#9b8cff"}
+              color={palette.nodes[i % 2]}
               transparent
-              opacity={0.25}
+              opacity={0.22}
               side={THREE.DoubleSide}
             />
           </mesh>
@@ -324,66 +364,51 @@ function CodeFragments() {
 function Scene({
   mouse,
   scroll,
+  palette,
 }: {
-  mouse: React.MutableRefObject<{ x: number; y: number }>;
-  scroll: React.MutableRefObject<number>;
+  mouse: React.RefObject<{ x: number; y: number }>;
+  scroll: React.RefObject<number>;
+  palette: Palette;
 }) {
-  const { gl } = useThree();
-
-  React.useEffect(() => {
-    gl.setClearColor(new THREE.Color("#0a0a14"), 0);
-  }, [gl]);
-
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
-
-      {/* Camera rig — creates the zoom in/out breathing + slow revolution */}
       <CameraRig mouse={mouse} scroll={scroll} />
 
-      {/* Lighting */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 5, 5]} intensity={0.6} color="#6fa8ff" />
-      <directionalLight position={[-5, -3, -5]} intensity={0.3} color="#9b8cff" />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[5, 5, 5]} intensity={0.65} color={palette.light} />
+      <directionalLight position={[-5, -3, -5]} intensity={0.35} color={palette.fill} />
 
-      <Core mouse={mouse} scroll={scroll} />
-      <OrbitSystem mouse={mouse} />
-      <ParticleField />
-      <CodeFragments />
+      <Core mouse={mouse} scroll={scroll} palette={palette} />
+      <OrbitSystem mouse={mouse} palette={palette} />
+      <ParticleField palette={palette} />
+      <CodeFragments palette={palette} />
     </>
   );
 }
 
-/* ---------- CameraRig — zoom in/out breathing + slow orbital revolution ---------- */
+/* ---------- CameraRig — breathing zoom + slow revolution ---------- */
 function CameraRig({
   mouse,
   scroll,
 }: {
-  mouse: React.MutableRefObject<{ x: number; y: number }>;
-  scroll: React.MutableRefObject<number>;
+  mouse: React.RefObject<{ x: number; y: number }>;
+  scroll: React.RefObject<number>;
 }) {
   const { camera } = useThree();
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
 
-    // Breathing zoom: camera dollies in and out over ~8s cycle
-    // Range: z = 4.5 (zoomed in) to z = 7.5 (zoomed out)
-    const breathCycle = t * 0.4; // slow cycle
-    const breath = Math.sin(breathCycle) * 0.5 + 0.5; // 0 to 1
-    const baseZ = 4.5 + breath * 3.0; // 4.5 to 7.5
+    const breath = Math.sin(t * 0.4) * 0.5 + 0.5;
+    const baseZ = 4.5 + breath * 3.0;
 
-    // Slow orbital revolution: camera moves in a small circle around the scene
-    // This makes the whole scene feel like it's revolving
-    const orbitAngle = t * 0.08; // very slow revolution
+    const orbitAngle = t * 0.08;
     const orbitRadius = 0.6;
     const orbitX = Math.cos(orbitAngle) * orbitRadius;
     const orbitY = Math.sin(orbitAngle) * orbitRadius * 0.5;
 
-    // Apply scroll parallax (push camera back as user scrolls down)
     const scrollOffset = scroll.current * 2.0;
-
-    // Apply mouse parallax (subtle)
     const mouseX = mouse.current.x * 0.5;
     const mouseY = mouse.current.y * 0.4;
 
@@ -391,8 +416,6 @@ function CameraRig({
     camera.position.x = orbitX + mouseX;
     camera.position.y = orbitY + mouseY;
     camera.position.z = baseZ + scrollOffset;
-
-    // Camera always looks at the center
     camera.lookAt(0, 0, 0);
     /* eslint-enable react-hooks/immutability */
   });
@@ -407,7 +430,9 @@ export function HeroScene() {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [shouldRender, setShouldRender] = React.useState(true);
 
-  // Track mouse
+  const { resolvedTheme } = useTheme();
+  const palette = PALETTES[resolvedTheme === "dark" ? "dark" : "light"];
+
   React.useEffect(() => {
     if (REDUCED_MOTION) return;
     const onMove = (e: MouseEvent) => {
@@ -418,7 +443,6 @@ export function HeroScene() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
-  // Track scroll
   React.useEffect(() => {
     const onScroll = () => {
       scroll.current = Math.min(window.scrollY / window.innerHeight, 1);
@@ -428,7 +452,7 @@ export function HeroScene() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Pause when offscreen or tab hidden
+  // Stop rendering when offscreen or the tab is hidden — no wasted GPU/battery.
   React.useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -441,7 +465,6 @@ export function HeroScene() {
     const onVisibility = () => {
       if (document.hidden) setShouldRender(false);
       else {
-        // Re-check viewport visibility
         const rect = el.getBoundingClientRect();
         setShouldRender(rect.top < window.innerHeight && rect.bottom > 0);
       }
@@ -470,43 +493,37 @@ export function HeroScene() {
         >
           <AdaptiveDpr pixelated />
           <AdaptiveEvents />
-          <Scene mouse={mouse} scroll={scroll} />
+          <Scene mouse={mouse} scroll={scroll} palette={palette} />
         </Canvas>
       )}
     </div>
   );
 }
 
-/* Fallback moved to ./hero-fallback (kept lightweight, no three.js) */
-
 /* ---------- Wrapper with WebGL detection ---------- */
 export function HeroSceneWithFallback() {
   const [supportsWebGL, setSupportsWebGL] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
-    // Probe deferred one frame: keeps the effect body free of
-    // synchronous setState and lets first paint happen before any
-    // canvas/context work.
+    // Probe deferred one frame: keeps the effect body free of synchronous
+    // setState and lets first paint happen before any canvas/context work.
     const raf = requestAnimationFrame(() => {
-    if (REDUCED_MOTION) {
-      setSupportsWebGL(false);
-      return;
-    }
-    try {
-      const canvas = document.createElement("canvas");
-      const gl =
-        canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-      setSupportsWebGL(!!gl);
-    } catch {
-      setSupportsWebGL(false);
-    }
+      if (REDUCED_MOTION) {
+        setSupportsWebGL(false);
+        return;
+      }
+      try {
+        const canvas = document.createElement("canvas");
+        const gl =
+          canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        setSupportsWebGL(!!gl);
+      } catch {
+        setSupportsWebGL(false);
+      }
     });
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  if (supportsWebGL === null) {
-    return <HeroFallback />;
-  }
   if (!supportsWebGL) {
     return <HeroFallback />;
   }

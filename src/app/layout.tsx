@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -10,18 +10,33 @@ import { ThemeProvider } from "@/components/theme-provider";
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://its-my-portfolio-io.vercel.app";
 
-const spaceGrotesk = Space_Grotesk({
+/* PERF: the fonts are VARIABLE and VENDORED (src/app/fonts).
+ *
+ *  - Variable: one file covers every weight 200-800. The old setup pulled ten
+ *    static files across two families; these two total ~75 KB.
+ *  - Vendored instead of next/font/google: the build no longer has to reach
+ *    fonts.googleapis.com, so it succeeds on any machine, in CI, and behind a
+ *    firewall. Runtime is identical — next/font self-hosts either way — but
+ *    the build stops depending on a third party being up.
+ *  - `adjustFontFallback` derives a metric-matched system fallback, so the
+ *    swap from fallback to webfont causes no layout shift.
+ */
+const jakarta = localFont({
+  src: "./fonts/PlusJakartaSans-Variable.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: "200 800",
+  adjustFontFallback: "Arial",
+  fallback: ["ui-sans-serif", "system-ui", "Segoe UI", "Helvetica Neue", "sans-serif"],
 });
 
-const inter = Inter({
+const inter = localFont({
+  src: "./fonts/Inter-Variable.woff2",
   variable: "--font-body",
-  subsets: ["latin"],
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: "100 900",
+  adjustFontFallback: "Arial",
+  fallback: ["ui-sans-serif", "system-ui", "Segoe UI", "Helvetica Neue", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -88,7 +103,10 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#07090b",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F1F0E2" },
+    { media: "(prefers-color-scheme: dark)", color: "#241C15" },
+  ],
 };
 
 const jsonLd = {
@@ -127,7 +145,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -135,12 +153,12 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${spaceGrotesk.variable} ${inter.variable} font-body antialiased bg-background text-foreground overflow-x-hidden`}
+        className={`${jakarta.variable} ${inter.variable} font-body antialiased bg-background text-foreground overflow-x-hidden`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
+          defaultTheme="light"
+          enableSystem
           disableTransitionOnChange
         >
           {children}

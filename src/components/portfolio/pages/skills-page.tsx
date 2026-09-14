@@ -11,10 +11,10 @@ import { cn } from "@/lib/utils";
 import { languagesAndTools, techCategoryOrder, TechItem } from "@/data/languages";
 
 const statusAccentMap: Record<SkillStatus, AccentColor> = {
-  mastered: "cyan",
-  proficient: "blue",
-  learning: "purple",
-  future: "gold",
+  mastered: "golden",
+  proficient: "amber",
+  learning: "rust",
+  future: "sand",
 };
 
 export function SkillsPage() {
@@ -45,7 +45,7 @@ export function SkillsPage() {
             title={
               <>
                 An interactive{" "}
-                <span className="text-gradient-blue">technology ecosystem</span>.
+                <span className="text-grad-brand">technology ecosystem</span>.
               </>
             }
             description="Hover or tap any node to inspect it. Each skill shows its category, current learning status and the projects where I've used it. Statuses are honest — I'd rather under-promise and over-deliver."
@@ -66,8 +66,8 @@ export function SkillsPage() {
                   className={cn(
                     "inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
                     isActive
-                      ? "border-white/[0.16] bg-white/[0.06] text-foreground"
-                      : "border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:text-foreground"
+                      ? "border-line-strong bg-surface-2 text-foreground"
+                      : "border-line bg-surface text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {opt.value !== "all" && (
@@ -105,7 +105,7 @@ export function SkillsPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-4 border-b border-white/[0.06]"
+                  className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-4 border-b border-line"
                 >
                   <div className="flex flex-col gap-2">
                     <span
@@ -192,7 +192,7 @@ function SkillNode({
       whileHover={{ y: -2 }}
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col gap-3 rounded-2xl border border-white/[0.06] bg-card/40 p-4 text-left transition-colors hover:border-white/[0.16] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        "group relative flex flex-col gap-3 card-surface rounded-[22px] p-4 text-left transition-colors hover:border-line-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         sizeClass
       )}
       aria-label={`View details for ${skill.name}`}
@@ -228,7 +228,7 @@ function SkillNode({
 
       {/* Weight bar (subtle) */}
       <div className="mt-auto relative">
-        <div className="h-px w-full bg-white/[0.04]">
+        <div className="h-px w-full bg-surface">
           <motion.div
             initial={{ width: 0 }}
             whileInView={{ width: `${skill.weight}%` }}
@@ -281,12 +281,12 @@ function SkillDetailDrawer({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 30, opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full sm:max-w-md glass-strong rounded-t-3xl sm:rounded-3xl border border-white/[0.08] p-6 sm:p-8 shadow-2xl"
+            className="relative w-full sm:max-w-md glass-strong rounded-t-3xl sm:rounded-3xl border border-line p-6 sm:p-8 shadow-2xl"
           >
             {/* Close button */}
             <button
               onClick={() => onOpenChange(false)}
-              className="absolute top-4 right-4 grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors"
+              className="absolute top-4 right-4 grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-2 transition-colors"
               aria-label="Close"
             >
               <X className="h-4 w-4" />
@@ -316,7 +316,7 @@ function SkillDetailDrawer({
             </p>
 
             {/* Status description */}
-            <div className="mt-4 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+            <div className="mt-4 card-surface rounded-[16px] p-3">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {sMeta.description}
               </p>
@@ -332,7 +332,7 @@ function SkillDetailDrawer({
                   {skill.relatedProjects.map((p) => (
                     <span
                       key={p}
-                      className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[11px] font-mono text-foreground/80"
+                      className="rounded-md border border-line bg-surface px-2 py-0.5 text-[11px] font-mono text-foreground/80"
                     >
                       {p}
                     </span>
@@ -348,7 +348,7 @@ function SkillDetailDrawer({
             {/* CTA */}
             <button
               onClick={onNavigateProjects}
-              className="mt-6 w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-2.5 text-sm font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+              className="mt-6 w-full inline-flex items-center justify-center gap-1.5 rounded-full border border-line bg-surface px-4 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors"
             >
               <Sparkles className="h-4 w-4" />
               Browse all projects
@@ -363,7 +363,7 @@ function SkillDetailDrawer({
 /* ---------- Languages & Tools section ---------- */
 function LanguagesAndToolsSection() {
   return (
-    <section className="relative py-16 border-t border-white/[0.04]">
+    <section className="relative py-16 border-t border-line">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           eyebrow="Languages & Tools"
@@ -407,8 +407,8 @@ function TechIcon({ tech, index }: { tech: TechItem; index: number }) {
       transition={{ duration: 0.3, delay: Math.min(index * 0.02, 0.4) }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative flex flex-col items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition-all hover:border-[oklch(0.62_0.18_250_/_30%)] hover:bg-[oklch(0.62_0.18_250_/_0.04)]"
-      style={hovered ? { boxShadow: "0 0 24px -4px oklch(0.62 0.18 250 / 35%)" } : undefined}
+      className="group relative flex flex-col items-center gap-2 card-surface rounded-[16px] p-3 transition-all hover:border-a1/30 hover:bg-a1/4"
+      style={hovered ? { boxShadow: "0 0 24px -4px color-mix(in oklab, var(--a1) 35%, transparent)" } : undefined}
     >
       <div className="relative h-8 w-8">
         {!errored ? (
@@ -423,7 +423,7 @@ function TechIcon({ tech, index }: { tech: TechItem; index: number }) {
             onError={() => setErrored(true)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center rounded-md border border-white/10 bg-white/[0.04] font-mono text-[9px] text-muted-foreground uppercase">
+          <div className="flex h-full w-full items-center justify-center rounded-md border border-line-strong bg-surface font-mono text-[9px] text-muted-foreground uppercase">
             {tech.name.slice(0, 2)}
           </div>
         )}
@@ -440,7 +440,7 @@ function TechIcon({ tech, index }: { tech: TechItem; index: number }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.15 }}
-            className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-[oklch(0.62_0.18_250_/_30%)] bg-background px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-[oklch(0.7_0.18_250)] pointer-events-none"
+            className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-a1/30 bg-background px-2 py-1 font-mono text-[9px] uppercase tracking-wider text-a1 pointer-events-none"
           >
             {tech.category}
           </motion.div>

@@ -88,7 +88,7 @@ function PortfolioShell() {
         className="pointer-events-none fixed top-0 left-1/4 h-[40vmin] w-[40vmin] rounded-full opacity-20 blur-3xl"
         style={{
           background:
-            "radial-gradient(circle, oklch(0.62 0.18 250 / 60%) 0%, transparent 70%)",
+            "radial-gradient(circle, color-mix(in oklab, var(--a1) 60%, transparent) 0%, transparent 70%)",
         }}
         aria-hidden="true"
       />
@@ -96,7 +96,7 @@ function PortfolioShell() {
         className="pointer-events-none fixed bottom-0 right-1/4 h-[35vmin] w-[35vmin] rounded-full opacity-15 blur-3xl"
         style={{
           background:
-            "radial-gradient(circle, oklch(0.55 0.22 295 / 60%) 0%, transparent 70%)",
+            "radial-gradient(circle, color-mix(in oklab, var(--a2) 60%, transparent) 0%, transparent 70%)",
         }}
         aria-hidden="true"
       />
@@ -122,7 +122,7 @@ function PortfolioShell() {
       <Terminal open={terminalOpen} onOpenChange={setTerminalOpen} />
 
       {/* Keyboard shortcut hint - desktop only */}
-      <div className="hidden md:flex fixed bottom-4 left-4 z-30 items-center gap-1.5 rounded-full border border-white/[0.06] bg-card/60 backdrop-blur-md px-3 py-1.5 text-[10px] text-muted-foreground/70">
+      <div className="hidden md:flex fixed bottom-4 left-4 z-30 items-center gap-1.5 rounded-full border border-line bg-card backdrop-blur-md px-3 py-1.5 text-[10px] text-muted-foreground/70">
         <kbd className="font-mono">⌘</kbd>
         <kbd className="font-mono">K</kbd>
         <span className="mx-1">commands</span>

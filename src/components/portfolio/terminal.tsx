@@ -212,9 +212,9 @@ export function Terminal({ open, onOpenChange }: TerminalProps) {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full max-w-2xl"
           >
-            <div className="glass-strong rounded-t-2xl sm:rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/40 overflow-hidden">
+            <div className="glass-strong rounded-t-2xl sm:rounded-2xl border border-line shadow-2xl shadow-foreground/15 overflow-hidden">
               {/* Title bar */}
-              <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2.5">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
                 <div className="flex items-center gap-2">
                   <TerminalIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="font-mono text-xs text-muted-foreground">
@@ -223,7 +223,7 @@ export function Terminal({ open, onOpenChange }: TerminalProps) {
                 </div>
                 <button
                   onClick={() => onOpenChange(false)}
-                  className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors"
+                  className="grid h-7 w-7 place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-2 transition-colors"
                   aria-label="Close terminal"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -233,7 +233,7 @@ export function Terminal({ open, onOpenChange }: TerminalProps) {
               {/* Terminal body */}
               <div
                 ref={scrollRef}
-                className="h-[60vh] sm:h-[50vh] overflow-y-auto scrollbar-premium bg-[oklch(0.10_0.012_264_/_60%)] p-4 font-mono text-[13px] leading-relaxed"
+                className="h-[60vh] sm:h-[50vh] overflow-y-auto scrollbar-premium bg-background/60 p-4 font-mono text-[13px] leading-relaxed"
                 onClick={() => inputRef.current?.focus()}
               >
                 {history.map((line, i) => (
@@ -243,15 +243,15 @@ export function Terminal({ open, onOpenChange }: TerminalProps) {
                       line.type === "input"
                         ? "text-foreground"
                         : line.type === "error"
-                        ? "text-[oklch(0.75_0.18_22)]"
+                        ? "text-destructive"
                         : line.type === "system"
-                        ? "text-[oklch(0.65_0.12_195)]"
+                        ? "text-a3"
                         : "text-muted-foreground"
                     }
                   >
                     {line.type === "input" ? (
                       <>
-                        <span className="text-[oklch(0.7_0.18_250)]">{PROMPT}</span>{" "}
+                        <span className="text-a1">{PROMPT}</span>{" "}
                         {line.text}
                       </>
                     ) : (
@@ -261,7 +261,7 @@ export function Terminal({ open, onOpenChange }: TerminalProps) {
                 ))}
                 {/* Active input line */}
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-[oklch(0.7_0.18_250)]">{PROMPT}</span>
+                  <span className="text-a1">{PROMPT}</span>
                   <input
                     ref={inputRef}
                     value={input}

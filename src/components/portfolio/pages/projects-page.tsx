@@ -42,9 +42,9 @@ export function ProjectsPage() {
             title={
               <>
                 Selected work across{" "}
-                <span className="text-gradient-blue">embedded AI</span>,{" "}
-                <span className="text-gradient-cyan">full-stack</span> &{" "}
-                <span className="text-gradient-gold">machine learning</span>.
+                <span className="text-grad-brand">embedded AI</span>,{" "}
+                <span className="text-grad-warm">full-stack</span> &{" "}
+                <span className="text-grad-deep">machine learning</span>.
               </>
             }
             description="Every project below was built to learn something concrete — a new system, a new integration, or a new way of solving a real problem. Click any card to open the full case study."
@@ -60,7 +60,7 @@ export function ProjectsPage() {
                 placeholder="Search projects, tech, keywords..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-full border border-white/[0.08] bg-white/[0.02] pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/[0.16] transition-colors"
+                className="w-full rounded-full border border-line bg-surface pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-line-strong transition-colors"
                 aria-label="Search projects"
               />
             </div>
@@ -82,8 +82,8 @@ export function ProjectsPage() {
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                       isActive
-                        ? "border-white/[0.16] bg-white/[0.06] text-foreground"
-                        : "border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:text-foreground"
+                        ? "border-line-strong bg-surface-2 text-foreground"
+                        : "border-line bg-surface text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {cat === "all" ? "All" : cat}
@@ -112,8 +112,8 @@ export function ProjectsPage() {
                   className={cn(
                     "shrink-0 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                     isActive
-                      ? "border-white/[0.16] bg-white/[0.06] text-foreground"
-                      : "border-white/[0.06] bg-white/[0.02] text-muted-foreground"
+                      ? "border-line-strong bg-surface-2 text-foreground"
+                      : "border-line bg-surface text-muted-foreground"
                   )}
                 >
                   {cat === "all" ? "All" : cat}

@@ -734,9 +734,9 @@ export function getProjectById(id: string): Project | undefined {
   return projects.find((p) => p.id === id);
 }
 
-export const statusMeta: Record<ProjectStatus, { label: string; accent: "blue" | "purple" | "cyan" | "gold" }> = {
-  shipped: { label: "Shipped", accent: "cyan" },
-  "in-progress": { label: "In Progress", accent: "blue" },
-  experimental: { label: "Experimental", accent: "purple" },
-  planned: { label: "Planned", accent: "gold" },
+export const statusMeta: Record<ProjectStatus, { label: string; accent: "amber" | "rust" | "golden" | "sand" }> = {
+  shipped: { label: "Shipped", accent: "golden" },
+  "in-progress": { label: "In Progress", accent: "amber" },
+  experimental: { label: "Experimental", accent: "rust" },
+  planned: { label: "Planned", accent: "sand" },
 };

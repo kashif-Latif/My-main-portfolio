@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Send, CheckCircle2, AlertCircle, Loader2, Phone } from "lucide-react";
 import { siteConfig, profile, gmailComposeUrl } from "@/data/profile";
 import { SectionHeading } from "@/components/portfolio/section-heading";
+import { AccentColor } from "@/lib/accents";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -104,7 +105,7 @@ export function ContactPage() {
             title={
               <>
                 Let's build{" "}
-                <span className="text-gradient-blue">something intelligent</span>.
+                <span className="text-grad-brand">something intelligent</span>.
               </>
             }
             description="I'm interested in meaningful opportunities, innovative projects, software engineering, AI development, automation, and collaborations that create real-world impact."
@@ -122,7 +123,7 @@ export function ContactPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="relative rounded-3xl border border-white/[0.06] bg-card/40 p-6 sm:p-8"
+              className="relative card-surface rounded-[32px] p-6 sm:p-8"
             >
               <form onSubmit={handleSubmit} className="flex flex-col gap-5" noValidate>
                 <div className="grid gap-5 sm:grid-cols-2">
@@ -176,9 +177,9 @@ export function ContactPage() {
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-[oklch(0.72_0.15_195_/_35%)] bg-[oklch(0.72_0.15_195_/_8%)] p-4"
+                    className="flex items-start gap-2.5 rounded-xl border border-a3/35 bg-a3/8 p-4"
                   >
-                    <CheckCircle2 className="h-4 w-4 text-[oklch(0.78_0.15_195)] mt-0.5 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-a3 mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-0.5">
                       <p className="text-sm font-medium text-foreground">Your email compose window opened.</p>
                       <p className="text-xs text-muted-foreground">
@@ -192,9 +193,9 @@ export function ContactPage() {
                   <motion.div
                     initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-[oklch(0.65_0.18_22_/_35%)] bg-[oklch(0.65_0.18_22_/_8%)] p-4"
+                    className="flex items-start gap-2.5 rounded-xl border border-destructive/35 bg-destructive/8 p-4"
                   >
-                    <AlertCircle className="h-4 w-4 text-[oklch(0.75_0.18_22)] mt-0.5 shrink-0" />
+                    <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
                     <div className="flex flex-col gap-0.5">
                       <p className="text-sm font-medium text-foreground">Please fix the highlighted fields.</p>
                       <p className="text-xs text-muted-foreground">
@@ -211,7 +212,7 @@ export function ContactPage() {
                   className={cn(
                     "group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-colors",
                     status === "submitting"
-                      ? "bg-white/[0.06] text-muted-foreground cursor-not-allowed"
+                      ? "bg-surface-2 text-muted-foreground cursor-not-allowed"
                       : "bg-foreground text-background hover:bg-foreground/90"
                   )}
                 >
@@ -230,7 +231,7 @@ export function ContactPage() {
 
                 <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
                   The form is wired for production use — replace the simulated
-                  submission in <code className="rounded bg-white/[0.04] px-1 py-0.5 font-mono">contact-page.tsx</code> with your
+                  submission in <code className="rounded bg-surface px-1 py-0.5 font-mono">contact-page.tsx</code> with your
                   real API endpoint or email service (e.g. Resend, SendGrid) when ready.
                 </p>
               </form>
@@ -249,7 +250,7 @@ export function ContactPage() {
                 label="Email"
                 value={siteConfig.email}
                 href={gmailComposeUrl(siteConfig.email, "Portfolio enquiry")}
-                accent="blue"
+                accent="amber"
                 note="Opens Gmail compose — best for project enquiries"
               />
               <ContactCard
@@ -257,7 +258,7 @@ export function ContactPage() {
                 label="GitHub"
                 value={`@${siteConfig.social.githubUsername}`}
                 href={siteConfig.social.github}
-                accent="purple"
+                accent="rust"
                 note="Code, experiments & projects"
               />
               <ContactCard
@@ -265,7 +266,7 @@ export function ContactPage() {
                 label="LinkedIn"
                 value="Connect professionally"
                 href={siteConfig.social.linkedin}
-                accent="cyan"
+                accent="golden"
                 note="Recruiters welcome"
               />
               <ContactCard
@@ -273,16 +274,16 @@ export function ContactPage() {
                 label="Phone"
                 value={siteConfig.phone}
                 href={`tel:${siteConfig.phone.replace(/\s/g, "")}`}
-                accent="gold"
+                accent="sand"
                 note="Available for calls & WhatsApp"
               />
 
               {/* Location / availability */}
-              <div className="rounded-2xl border border-white/[0.06] bg-card/40 p-5">
+              <div className="card-surface rounded-[22px] p-5">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[oklch(0.72_0.15_195)] opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[oklch(0.72_0.15_195)]" />
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-a3 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-a3" />
                   </span>
                   <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                     Currently
@@ -327,10 +328,10 @@ function Field({
   required?: boolean;
 }) {
   const baseClass = cn(
-    "w-full rounded-xl border bg-white/[0.02] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-colors",
+    "w-full rounded-xl border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none transition-colors",
     error
-      ? "border-[oklch(0.65_0.18_22_/_50%)] focus:border-[oklch(0.65_0.18_22)]"
-      : "border-white/[0.08] focus:border-white/[0.2]"
+      ? "border-destructive/50 focus:border-destructive"
+      : "border-line focus:border-brand"
   );
 
   return (
@@ -340,7 +341,7 @@ function Field({
         className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground"
       >
         {label}
-        {required && <span className="ml-1 text-[oklch(0.75_0.18_22)]">*</span>}
+        {required && <span className="ml-1 text-destructive">*</span>}
       </label>
       {type === "textarea" ? (
         <textarea
@@ -375,7 +376,7 @@ function Field({
           id={`${name}-error`}
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-[oklch(0.75_0.18_22)]"
+          className="text-xs text-destructive"
         >
           {error}
         </motion.p>
@@ -385,6 +386,13 @@ function Field({
 }
 
 /* ---------- Contact Card ---------- */
+const contactAccentClasses: Record<AccentColor, { border: string; text: string; bg: string }> = {
+  amber: { border: "border-a1/30", text: "text-a1", bg: "bg-a1/12" },
+  rust: { border: "border-a2/30", text: "text-a2", bg: "bg-a2/12" },
+  golden: { border: "border-a3/30", text: "text-a3", bg: "bg-a3/12" },
+  sand: { border: "border-a4/30", text: "text-a4", bg: "bg-a4/12" },
+};
+
 function ContactCard({
   icon: Icon,
   label,
@@ -397,23 +405,17 @@ function ContactCard({
   label: string;
   value: string;
   href: string;
-  accent: "blue" | "purple" | "cyan" | "gold";
+  accent: "amber" | "rust" | "golden" | "sand";
   note: string;
 }) {
-  const accentClasses = {
-    blue: { border: "border-[oklch(0.62_0.18_250_/_30%)]", text: "text-[oklch(0.7_0.18_250)]", bg: "bg-[oklch(0.62_0.18_250_/_12%)]" },
-    purple: { border: "border-[oklch(0.55_0.22_295_/_30%)]", text: "text-[oklch(0.65_0.2_295)]", bg: "bg-[oklch(0.55_0.22_295_/_12%)]" },
-    cyan: { border: "border-[oklch(0.72_0.15_195_/_30%)]", text: "text-[oklch(0.78_0.15_195)]", bg: "bg-[oklch(0.72_0.15_195_/_12%)]" },
-    gold: { border: "border-[oklch(0.78_0.13_90_/_30%)]", text: "text-[oklch(0.82_0.13_90)]", bg: "bg-[oklch(0.78_0.13_90_/_12%)]" },
-  };
-  const a = accentClasses[accent];
+  const a = contactAccentClasses[accent];
 
   return (
     <a
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-      className="group flex items-start gap-3 rounded-2xl border border-white/[0.06] bg-card/40 p-4 hover:border-white/[0.16] transition-colors"
+      className="group flex items-start gap-3 card-surface rounded-[22px] p-4 hover:border-line-strong transition-colors"
     >
       <div className={cn("grid h-10 w-10 place-items-center rounded-xl border", a.border, a.bg)}>
         <Icon className={cn("h-4 w-4", a.text)} />

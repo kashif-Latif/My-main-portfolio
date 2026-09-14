@@ -5,15 +5,8 @@ import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { CheckCircle2, Circle, Loader2, Sparkles, Compass } from "lucide-react";
 import { journeyStages, currentlyExploring, JourneyStage } from "@/data/journey";
 import { SectionHeading } from "@/components/portfolio/section-heading";
-import { AccentColor, accentTextClass, accentBorderClass, accentBgClass } from "@/lib/accents";
+import { accentTextClass, accentBorderClass, accentBgClass } from "@/lib/accents";
 import { cn } from "@/lib/utils";
-
-const stageAccent: Record<JourneyStage["accent"], AccentColor> = {
-  blue: "blue",
-  purple: "purple",
-  cyan: "cyan",
-  gold: "gold",
-};
 
 const statusIcon = {
   complete: CheckCircle2,
@@ -51,8 +44,8 @@ export function JourneyPage() {
             title={
               <>
                 From{" "}
-                <span className="text-gradient-blue">web foundations</span> to{" "}
-                <span className="text-gradient-gold">agentic AI</span>.
+                <span className="text-grad-brand">web foundations</span> to{" "}
+                <span className="text-grad-deep">agentic AI</span>.
               </>
             }
             description="A cinematic timeline of how I'm progressing from writing my first line of HTML toward building autonomous AI agent systems. Scroll to follow the path — the line on the left fills as you descend and reverses when you scroll back up."
@@ -65,7 +58,7 @@ export function JourneyPage() {
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <div className="relative">
             {/* Static track (background line) — always on the left side of the dev boxes */}
-            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-white/[0.06]" />
+            <div className="absolute left-[19px] top-0 bottom-0 w-px bg-surface-2" />
 
             {/* Animated progress line — fills as you scroll down, reverses on scroll up */}
             <motion.div
@@ -76,9 +69,9 @@ export function JourneyPage() {
                 className="h-full w-full"
                 style={{
                   background:
-                    "linear-gradient(to bottom, #5a8dff 0%, #9b8cff 50%, #f0a830 100%)",
+                    "linear-gradient(to bottom, var(--a1) 0%, var(--a2) 50%, var(--a3) 100%)",
                   boxShadow:
-                    "0 0 8px rgba(90, 141, 255, 0.6), 0 0 16px rgba(155, 140, 255, 0.4)",
+                    "0 0 8px color-mix(in oklab, var(--a1) 55%, transparent)",
                 }}
               />
             </motion.div>
@@ -91,9 +84,9 @@ export function JourneyPage() {
               <div
                 className="h-3 w-3 rounded-full"
                 style={{
-                  background: "#5a8dff",
+                  background: "var(--a1)",
                   boxShadow:
-                    "0 0 12px rgba(90, 141, 255, 0.9), 0 0 24px rgba(90, 141, 255, 0.5)",
+                    "0 0 12px color-mix(in oklab, var(--a1) 70%, transparent)",
                 }}
               />
             </motion.div>
@@ -109,14 +102,14 @@ export function JourneyPage() {
       </section>
 
       {/* ===== CURRENTLY EXPLORING ===== */}
-      <section className="relative py-16 sm:py-24 border-t border-white/[0.04]">
+      <section className="relative py-16 sm:py-24 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-white/[0.06] bg-card/30 p-8 sm:p-12 relative overflow-hidden">
+          <div className="card-surface rounded-[32px] p-8 sm:p-12 relative overflow-hidden">
             <div
               className="pointer-events-none absolute inset-0 opacity-50"
               style={{
                 background:
-                  "radial-gradient(ellipse at top left, rgba(240, 168, 48, 0.06) 0%, transparent 60%)",
+                  "radial-gradient(ellipse at top left, color-mix(in oklab, var(--a1) 8%, transparent) 0%, transparent 60%)",
               }}
             />
             <div className="relative grid gap-10 lg:grid-cols-[1fr_2fr] lg:items-center">
@@ -135,9 +128,9 @@ export function JourneyPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5"
+                    className="flex items-start gap-2.5 card-surface rounded-[16px] p-3.5"
                   >
-                    <Compass className="h-3.5 w-3.5 text-[oklch(0.82_0.13_90)] mt-0.5 shrink-0" />
+                    <Compass className="h-3.5 w-3.5 text-a4 mt-0.5 shrink-0" />
                     <span className="text-xs text-foreground/85 leading-relaxed">{topic}</span>
                   </motion.div>
                 ))}
@@ -152,7 +145,7 @@ export function JourneyPage() {
 
 /* ---------- Stage Card ---------- */
 function JourneyStageCard({ stage, index }: { stage: JourneyStage; index: number }) {
-  const accent = stageAccent[stage.accent];
+  const accent = stage.accent;
   const StatusIcon = statusIcon[stage.status];
 
   return (
@@ -180,13 +173,13 @@ function JourneyStageCard({ stage, index }: { stage: JourneyStage; index: number
       </div>
 
       {/* Content card (the "dev box") */}
-      <div className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 sm:p-6 transition-all hover:border-white/[0.14] hover:shadow-lg hover:shadow-black/20">
+      <div className="group relative card-surface rounded-[22px] p-5 sm:p-6 transition-all hover:border-line-strong hover:shadow-lg hover:shadow-foreground/10">
         {/* Accent glow on hover */}
         <div
           className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
           style={{
             background:
-              "radial-gradient(ellipse at top right, rgba(90, 141, 255, 0.06) 0%, transparent 60%)",
+              "radial-gradient(ellipse at top right, color-mix(in oklab, var(--a1) 8%, transparent) 0%, transparent 60%)",
           }}
         />
 
@@ -230,7 +223,7 @@ function JourneyStageCard({ stage, index }: { stage: JourneyStage; index: number
           {stage.items.map((item) => (
             <span
               key={item}
-              className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[10px] font-mono text-foreground/80"
+              className="rounded-md border border-line bg-surface px-2 py-0.5 text-[10px] font-mono text-foreground/80"
             >
               {item}
             </span>

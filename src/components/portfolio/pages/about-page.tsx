@@ -37,7 +37,7 @@ export function AboutPage() {
             title={
               <>
                 A student building a{" "}
-                <span className="text-gradient-blue">long-term career</span> in AI &
+                <span className="text-grad-brand">long-term career</span> in AI &
                 software.
               </>
             }
@@ -59,10 +59,10 @@ export function AboutPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-30px" }}
                   transition={{ duration: 0.5, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex items-start gap-3 rounded-2xl border border-white/[0.06] bg-card/40 p-4 backdrop-blur-sm"
+                  className="flex items-start gap-3 card-surface rounded-[22px] p-4 backdrop-blur-sm"
                 >
-                  <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/[0.06] bg-white/[0.02]">
-                    <Icon className="h-4 w-4 text-[oklch(0.7_0.18_250)]" />
+                  <div className="grid h-10 w-10 place-items-center card-surface rounded-[16px]">
+                    <Icon className="h-4 w-4 text-a1" />
                   </div>
                   <div className="flex flex-col gap-0.5">
                     <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -105,9 +105,9 @@ export function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-30px" }}
                 transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-2 rounded-2xl border border-white/[0.06] bg-card/40 p-6"
+                className="mt-2 card-surface rounded-[22px] p-6"
               >
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-[oklch(0.7_0.18_250)]">
+                <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-a1">
                   <Zap className="h-3.5 w-3.5" />
                   What drives me
                 </div>
@@ -123,7 +123,7 @@ export function AboutPage() {
       </section>
 
       {/* ===== CAREER VISION ROADMAP ===== */}
-      <section className="relative py-16 sm:py-24 border-t border-white/[0.04]">
+      <section className="relative py-16 sm:py-24 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Career Vision"
@@ -134,7 +134,7 @@ export function AboutPage() {
 
           <div className="mt-16 relative">
             {/* Vertical line - desktop */}
-            <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/[0.12] to-transparent" />
+            <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-line-strong to-transparent" />
 
             <div className="flex flex-col gap-8 lg:gap-0">
               {profile.careerVision.map((vision, i) => {
@@ -153,9 +153,9 @@ export function AboutPage() {
                   >
                     {/* Content */}
                     <div className="lg:w-1/2 lg:px-8">
-                      <div className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 transition-colors hover:border-white/[0.12]">
+                      <div className="group relative card-surface rounded-[22px] p-5 transition-colors hover:border-line-strong">
                         <div className="flex items-start gap-3">
-                          <span className="font-display text-2xl font-semibold text-[oklch(0.7_0.18_250)] tabular-nums">
+                          <span className="font-display text-2xl font-semibold text-a1 tabular-nums">
                             0{i + 1}
                           </span>
                           <p className="text-sm sm:text-base text-foreground/85 leading-relaxed pt-1">
@@ -168,8 +168,8 @@ export function AboutPage() {
                     {/* Node - desktop */}
                     <div className="hidden lg:flex lg:w-0 lg:relative">
                       <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 grid h-3 w-3 place-items-center">
-                        <div className="absolute h-3 w-3 rounded-full bg-[oklch(0.62_0.18_250)] opacity-50 animate-ping" />
-                        <div className="relative h-2 w-2 rounded-full bg-[oklch(0.7_0.18_250)]" />
+                        <div className="absolute h-3 w-3 rounded-full bg-a1 opacity-50 animate-ping" />
+                        <div className="relative h-2 w-2 rounded-full bg-a1" />
                       </div>
                     </div>
 
@@ -184,14 +184,14 @@ export function AboutPage() {
       </section>
 
       {/* ===== LEARNING PHILOSOPHY ===== */}
-      <section className="relative py-16 sm:py-24 border-t border-white/[0.04]">
+      <section className="relative py-16 sm:py-24 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-white/[0.06] bg-card/30 p-8 sm:p-12 lg:p-16 relative overflow-hidden">
+          <div className="card-surface rounded-[32px] p-8 sm:p-12 lg:p-16 relative overflow-hidden">
             <div
               className="pointer-events-none absolute inset-0 opacity-50"
               style={{
                 background:
-                  "radial-gradient(ellipse at bottom right, oklch(0.55 0.22 295 / 8%) 0%, transparent 60%)",
+                  "radial-gradient(ellipse at bottom right, color-mix(in oklab, var(--a2) 8%, transparent) 0%, transparent 60%)",
               }}
             />
             <div className="relative grid gap-12 lg:grid-cols-2 lg:items-center">
@@ -200,16 +200,16 @@ export function AboutPage() {
                   eyebrow="Learning Philosophy"
                   title={
                     <>
-                      <span className="text-gradient-cyan">Learn deeply.</span>{" "}
-                      <span className="text-gradient-blue">Build practically.</span>{" "}
-                      <span className="text-gradient-gold">Ship consistently.</span>
+                      <span className="text-grad-warm">Learn deeply.</span>{" "}
+                      <span className="text-grad-brand">Build practically.</span>{" "}
+                      <span className="text-grad-deep">Ship consistently.</span>
                     </>
                   }
                   description="My approach to growth is structured, deliberate and project-driven — not certificate-driven."
                 />
                 <button
                   onClick={() => navigate("journey")}
-                  className="group mt-6 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-5 py-2.5 text-sm font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+                  className="group mt-6 inline-flex w-fit items-center gap-1.5 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors"
                 >
                   <Target className="h-4 w-4" />
                   View AI journey
@@ -223,9 +223,9 @@ export function AboutPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.05 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5"
+                    className="flex items-start gap-2.5 card-surface rounded-[16px] p-3.5"
                   >
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[oklch(0.62_0.18_250)] shrink-0" />
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-a1 shrink-0" />
                     <span className="text-xs text-foreground/85 leading-relaxed">{p}</span>
                   </motion.div>
                 ))}

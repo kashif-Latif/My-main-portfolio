@@ -91,7 +91,7 @@ export const siteConfig = {
       description: "Focused on AI, ML, and automation roles — highlights deep learning, LLMs, and agentic AI work.",
       fileName: "Muhammad_Kashif_Latif_AI_Engineer_Resume.pdf",
       path: "/resumes/Muhammad_Kashif_Latif_AI_Engineer_Resume.pdf",
-      accent: "blue" as const,
+      accent: "amber" as const,
     },
     {
       id: "fullstack",
@@ -99,7 +99,7 @@ export const siteConfig = {
       description: "Focused on software & web engineering — highlights React, Next.js, Node.js, Django, and databases.",
       fileName: "Muhammad_Kashif_Latif_FullStack_Developer_Resume.pdf",
       path: "/resumes/Muhammad_Kashif_Latif_FullStack_Developer_Resume.pdf",
-      accent: "cyan" as const,
+      accent: "golden" as const,
     },
     {
       id: "combined",
@@ -107,7 +107,7 @@ export const siteConfig = {
       description: "The complete picture — both software engineering and AI work in one document. Best for hybrid roles.",
       fileName: "Muhammad_Kashif_Latif_Combined_Software_AI_Resume.pdf",
       path: "/resumes/Muhammad_Kashif_Latif_Combined_Software_AI_Resume.pdf",
-      accent: "purple" as const,
+      accent: "rust" as const,
     },
   ],
   githubStats: {

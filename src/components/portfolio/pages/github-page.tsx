@@ -145,8 +145,8 @@ export function GithubPage() {
             eyebrow="GitHub & Tech Presence"
             title={
               <>
-                <span className="text-gradient-blue">40+ repositories</span> ·{" "}
-                <span className="text-gradient-gold">10,000+ contributions</span> — and
+                <span className="text-grad-brand">40+ repositories</span> ·{" "}
+                <span className="text-grad-deep">10,000+ contributions</span> — and
                 counting.
               </>
             }
@@ -165,7 +165,7 @@ export function GithubPage() {
               suffix="+"
               caption="Across AI, full-stack & embedded"
               icon={Github}
-              accent="blue"
+              accent="amber"
             />
             <AnimatedStatCard
               label="Contributions"
@@ -173,7 +173,7 @@ export function GithubPage() {
               suffix="+"
               caption="Pushed consistently across all repos"
               icon={TrendingUp}
-              accent="cyan"
+              accent="golden"
             />
             <AnimatedStatCard
               label="Stars earned"
@@ -181,7 +181,7 @@ export function GithubPage() {
               suffix="+"
               caption="Across public repositories"
               icon={Star}
-              accent="gold"
+              accent="sand"
             />
             <AnimatedStatCard
               label="Languages used"
@@ -189,7 +189,7 @@ export function GithubPage() {
               suffix="+"
               caption="TypeScript, Python, JS, C++, Java"
               icon={Code2}
-              accent="purple"
+              accent="rust"
             />
           </div>
         </div>
@@ -235,7 +235,7 @@ export function GithubPage() {
       </section>
 
       {/* ===== TOP TECH ===== */}
-      <section className="relative py-16 border-t border-white/[0.04]">
+      <section className="relative py-16 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-[1fr_2fr] lg:gap-16">
             <div>
@@ -249,7 +249,7 @@ export function GithubPage() {
               {topLanguages.map((lang, i) => {
                 const max = topLanguages[0].count;
                 const pct = (lang.count / max) * 100;
-                const accent = (["blue", "purple", "cyan", "gold"] as AccentColor[])[i % 4];
+                const accent = (["amber", "rust", "golden", "sand"] as AccentColor[])[i % 4];
                 return (
                   <motion.div
                     key={lang.name}
@@ -262,7 +262,7 @@ export function GithubPage() {
                     <span className="w-28 text-xs font-mono text-foreground/80 shrink-0">
                       {lang.name}
                     </span>
-                    <div className="flex-1 h-7 rounded-md border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+                    <div className="flex-1 h-7 rounded-md border border-line bg-surface overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         whileInView={{ width: `${pct}%` }}
@@ -285,21 +285,21 @@ export function GithubPage() {
       </section>
 
       {/* ===== LINKEDIN SECTION ===== */}
-      <section className="relative py-16 border-t border-white/[0.04]">
+      <section className="relative py-16 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-white/[0.06] bg-card/30 p-8 sm:p-12 relative overflow-hidden">
+          <div className="card-surface rounded-[32px] p-8 sm:p-12 relative overflow-hidden">
             <div
               className="pointer-events-none absolute inset-0 opacity-50"
               style={{
                 background:
-                  "radial-gradient(ellipse at top right, oklch(0.55 0.22 295 / 8%) 0%, transparent 60%)",
+                  "radial-gradient(ellipse at top right, color-mix(in oklab, var(--a2) 8%, transparent) 0%, transparent 60%)",
               }}
             />
             <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl border border-[oklch(0.55_0.22_295_/_30%)] bg-[oklch(0.55_0.22_295_/_12%)]">
-                    <Linkedin className="h-5 w-5 text-[oklch(0.65_0.2_295)]" />
+                  <div className="grid h-10 w-10 place-items-center rounded-xl border border-a2/30 bg-a2/12">
+                    <Linkedin className="h-5 w-5 text-a2" />
                   </div>
                   <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                     Professional presence
@@ -313,7 +313,7 @@ export function GithubPage() {
                   href={siteConfig.social.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-5 py-2.5 text-sm font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+                  className="mt-6 inline-flex items-center gap-2 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors"
                 >
                   <Linkedin className="h-4 w-4" />
                   View LinkedIn
@@ -328,9 +328,9 @@ export function GithubPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: i * 0.06 }}
-                    className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5"
+                    className="flex items-start gap-2.5 card-surface rounded-[16px] p-3.5"
                   >
-                    <Briefcase className="h-3.5 w-3.5 text-[oklch(0.65_0.2_295)] mt-0.5 shrink-0" />
+                    <Briefcase className="h-3.5 w-3.5 text-a2 mt-0.5 shrink-0" />
                     <span className="text-xs text-foreground/85 leading-relaxed">{goal}</span>
                   </motion.div>
                 ))}
@@ -341,7 +341,7 @@ export function GithubPage() {
       </section>
 
       {/* ===== INTERVIEW PREP ===== */}
-      <section className="relative py-16 border-t border-white/[0.04]">
+      <section className="relative py-16 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Interview Preparation"
@@ -351,7 +351,7 @@ export function GithubPage() {
           />
           <div className="mt-10 flex flex-wrap justify-center gap-2">
             {interviewTopics.map((topic, i) => {
-              const accent = (["blue", "purple", "cyan", "gold"] as AccentColor[])[i % 4];
+              const accent = (["amber", "rust", "golden", "sand"] as AccentColor[])[i % 4];
               return (
                 <motion.span
                   key={topic}
@@ -375,7 +375,7 @@ export function GithubPage() {
       </section>
 
       {/* ===== CONTACT LINKS ===== */}
-      <section className="relative py-16 border-t border-white/[0.04]">
+      <section className="relative py-16 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <ContactLink
@@ -383,35 +383,35 @@ export function GithubPage() {
               label="GitHub"
               value={`@${siteConfig.social.githubUsername}`}
               href={siteConfig.social.github}
-              accent="blue"
+              accent="amber"
             />
             <ContactLink
               icon={Linkedin}
               label="LinkedIn"
               value="View profile"
               href={siteConfig.social.linkedin}
-              accent="purple"
+              accent="rust"
             />
             <ContactLink
               icon={Mail}
               label="Email"
               value={siteConfig.email}
               href={gmailComposeUrl(siteConfig.email, "Portfolio enquiry")}
-              accent="cyan"
+              accent="golden"
             />
             <ContactLink
               icon={Phone}
               label="Phone"
               value={siteConfig.phone}
               href={`tel:${siteConfig.phone.replace(/\s/g, "")}`}
-              accent="gold"
+              accent="sand"
             />
             <ContactLink
               icon={GraduationCap}
               label="University"
               value={profile.university}
               href="#"
-              accent="gold"
+              accent="sand"
             />
           </div>
 
@@ -450,7 +450,7 @@ function StatCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 backdrop-blur-sm overflow-hidden"
+      className="group relative card-surface rounded-[22px] p-5 backdrop-blur-sm overflow-hidden"
     >
       <div className="flex items-center justify-between mb-3">
         <div
@@ -492,7 +492,7 @@ function ContactLink({
       href={href}
       target={href.startsWith("http") ? "_blank" : undefined}
       rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-      className="group flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-card/40 p-4 hover:border-white/[0.16] transition-colors"
+      className="group flex items-center gap-3 card-surface rounded-[22px] p-4 hover:border-line-strong transition-colors"
     >
       <div
         className={cn(
@@ -582,7 +582,7 @@ function AnimatedStatCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="group relative rounded-2xl border border-white/[0.06] bg-card/40 p-5 backdrop-blur-sm overflow-hidden"
+      className="group relative card-surface rounded-[22px] p-5 backdrop-blur-sm overflow-hidden"
     >
       <div className="flex items-center justify-between mb-3">
         <div
@@ -627,15 +627,15 @@ function RepoCard({
       transition={{ duration: 0.4, delay: Math.min(index * 0.04, 0.4) }}
       whileHover={{ y: -2 }}
       className={cn(
-        "group relative flex flex-col rounded-2xl border bg-card/40 p-4 transition-colors",
+        "group relative flex flex-col rounded-2xl border bg-card p-4 transition-colors",
         featured
-          ? "border-[oklch(0.62_0.18_250_/_30%)] hover:border-[oklch(0.62_0.18_250_/_50%)]"
-          : "border-white/[0.06] hover:border-white/[0.14]"
+          ? "border-a1/30 hover:border-a1/50"
+          : "border-line hover:border-line-strong"
       )}
     >
       {/* Featured badge */}
       {featured && (
-        <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border border-[oklch(0.62_0.18_250_/_30%)] bg-[oklch(0.62_0.18_250_/_0.06)] px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-[oklch(0.7_0.18_250)]">
+        <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full border border-a1/30 bg-a1/6 px-2 py-0.5 text-[9px] font-mono uppercase tracking-wider text-a1">
           <Star className="h-2.5 w-2.5" />
           Featured
         </span>
@@ -650,7 +650,7 @@ function RepoCard({
       </div>
 
       {/* Repo name */}
-      <h4 className="font-display text-base font-semibold text-foreground group-hover:text-[oklch(0.7_0.18_250)] transition-colors">
+      <h4 className="font-display text-base font-semibold text-foreground group-hover:text-a1 transition-colors">
         {repo.name}
       </h4>
 
@@ -660,7 +660,7 @@ function RepoCard({
       </p>
 
       {/* Footer: language, stars, forks, updated */}
-      <div className="mt-3 flex items-center gap-3 text-[10px] text-muted-foreground border-t border-white/[0.04] pt-2.5">
+      <div className="mt-3 flex items-center gap-3 text-[10px] text-muted-foreground border-t border-line pt-2.5">
         <span className="flex items-center gap-1">
           <span
             className="h-2 w-2 rounded-full"
@@ -688,7 +688,7 @@ function RepoCard({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="mt-2 inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-[oklch(0.7_0.18_250)] hover:text-[oklch(0.78_0.18_250)] transition-colors"
+          className="mt-2 inline-flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider text-a1 hover:text-a1 transition-colors"
         >
           <ExternalLink className="h-2.5 w-2.5" />
           Live demo

@@ -18,7 +18,8 @@ const HeroSceneWithFallback = dynamic(
   { ssr: false, loading: () => <HeroFallback /> }
 );
 import { RotatingRoles } from "@/components/portfolio/rotating-roles";
-import { MagneticButton } from "@/components/portfolio/magnetic-button";
+import { BrandButton } from "@/components/portfolio/brand-button";
+import { Marquee } from "@/components/portfolio/marquee";
 import { ResumeMenu } from "@/components/portfolio/resume-menu";
 import { SectionHeading } from "@/components/portfolio/section-heading";
 import { ProjectCard } from "@/components/portfolio/project-card";
@@ -27,6 +28,12 @@ import { profile, siteConfig, gmailComposeUrl } from "@/data/profile";
 import { skillCategories, getSkillsByCategory } from "@/data/skills";
 import { getFeaturedProjects, Project } from "@/data/projects";
 import { ProjectModal } from "@/components/portfolio/project-modal";
+import {
+  AccentColor,
+  accentTextClass,
+  accentBorderClass,
+  accentBgClass,
+} from "@/lib/accents";
 import { cn } from "@/lib/utils";
 
 export function HomePage() {
@@ -47,114 +54,118 @@ export function HomePage() {
     <div className="relative">
       {/* ===== HERO ===== */}
       <section
-        className="relative min-h-screen flex flex-col justify-center overflow-hidden bg-grid"
+        className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-grid"
         aria-label="Hero"
       >
         <div className="absolute inset-0">
           <HeroSceneWithFallback />
         </div>
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/40" />
+        {/* Ground the 3D scene into the page colour so type stays readable */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/50 via-background/20 to-background" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-background/85 via-background/10 to-background/40" />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-28 pb-16">
-          <div className="max-w-3xl mx-auto text-center lg:mx-0 lg:text-left">
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex items-center gap-2 rounded-full border border-[oklch(0.62_0.18_250_/_30%)] bg-[oklch(0.62_0.18_250_/_0.08)] px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] text-[oklch(0.7_0.18_250)] backdrop-blur-md"
-              style={{ boxShadow: "0 0 24px -4px oklch(0.62 0.18 250 / 35%)" }}
-            >
-              {/* More prominent blinking indicator */}
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[oklch(0.62_0.18_250)] opacity-90" />
-                <span
-                  className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[oklch(0.7_0.18_250)]"
-                  style={{ animation: "blink 1.2s steps(2, end) infinite", boxShadow: "0 0 8px oklch(0.7 0.18 250 / 90%)" }}
-                />
-              </span>
-              Available for opportunities
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-5 font-display text-[2.25rem] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.0] sm:leading-[0.95]"
-            >
-              <span className="block text-foreground">Muhammad</span>
-              <span className="block text-gradient-blue">Kashif Latif</span>
-            </motion.h1>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-3 flex items-center gap-2 h-7 justify-center lg:justify-start"
-            >
-              <span className="font-display text-base sm:text-xl md:text-2xl lg:text-3xl font-medium text-foreground/90">
-                <RotatingRoles roles={profile.rotatingRoles} />
-              </span>
-            </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-4 max-w-2xl mx-auto lg:mx-0 text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed"
-            >
-              {profile.heroSubtitle}
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-6 flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3 justify-center lg:justify-start w-full sm:w-auto"
-            >
-              <MagneticButton
-                onClick={() => navigate("projects")}
-                className="group rounded-full bg-foreground px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-background hover:bg-foreground/90 transition-colors w-full sm:w-auto"
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pt-32 pb-20 sm:px-6 lg:px-8">
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center lg:mx-0 lg:max-w-none lg:flex-row lg:items-end lg:justify-between lg:text-left">
+            <div className="lg:max-w-3xl">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="inline-flex items-center gap-2.5 rounded-full border border-line bg-card px-4 py-2 text-[12px] font-medium tracking-tight text-foreground shadow-[var(--shadow-card)]"
               >
-                Explore My Work
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </MagneticButton>
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-80" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-brand" />
+                </span>
+                Available for opportunities
+              </motion.div>
 
-              <MagneticButton
-                onClick={() => navigate("contact")}
-                className="group rounded-full border border-white/[0.12] bg-white/[0.02] px-5 sm:px-6 py-2.5 sm:py-3 text-sm font-medium text-foreground backdrop-blur-md hover:bg-white/[0.06] transition-colors w-full sm:w-auto"
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-6 font-display text-[2.5rem] font-extrabold leading-[1.02] tracking-[-0.04em] sm:text-6xl md:text-7xl lg:text-[5.25rem]"
               >
-                Let's Connect
-              </MagneticButton>
+                <span className="block text-foreground">I&rsquo;m Muhammad</span>
+                <span className="block text-brand">Kashif Latif</span>
+              </motion.h1>
 
-              <ResumeMenu variant="outline" className="w-full sm:w-auto" />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.45 }}
-              className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground/80 justify-center lg:justify-start"
-            >
-              <span className="flex items-center gap-1.5">
-                <MapPin className="h-3 w-3 text-[oklch(0.72_0.15_195)]" />
-                {profile.location}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <GraduationCap className="h-3 w-3 text-[oklch(0.62_0.18_250)]" />
-                {profile.degree}
-              </span>
-              <a
-                href={gmailComposeUrl(siteConfig.email, "Portfolio enquiry")}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-4 flex h-8 items-center justify-center gap-2 lg:justify-start"
               >
-                <Mail className="h-3 w-3 text-[oklch(0.55_0.22_295)]" />
-                {siteConfig.email}
-              </a>
-            </motion.div>
+                <span className="font-display text-lg font-semibold tracking-tight text-foreground/80 sm:text-2xl lg:text-3xl">
+                  <RotatingRoles roles={profile.rotatingRoles} />
+                </span>
+              </motion.div>
+
+              <motion.p
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0 lg:text-lg"
+              >
+                {profile.heroSubtitle}
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-8 flex w-full flex-col justify-center gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:gap-3 lg:justify-start"
+              >
+                <BrandButton
+                  onClick={() => navigate("projects")}
+                  variant="brand"
+                  arrow="right"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  Explore My Work
+                </BrandButton>
+
+                <BrandButton
+                  onClick={() => navigate("contact")}
+                  variant="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
+                >
+                  Let&rsquo;s Connect
+                </BrandButton>
+
+                <ResumeMenu variant="outline" className="w-full sm:w-auto" />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.45 }}
+                className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start"
+              >
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-3.5 w-3.5 text-brand" />
+                  {profile.location}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <GraduationCap className="h-3.5 w-3.5 text-brand" />
+                  {profile.degree}
+                </span>
+                <a
+                  href={gmailComposeUrl(siteConfig.email, "Portfolio enquiry")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 transition-colors hover:text-brand"
+                >
+                  <Mail className="h-3.5 w-3.5 text-brand" />
+                  {siteConfig.email}
+                </a>
+              </motion.div>
+            </div>
+
+            <HireMeBadge />
           </div>
         </div>
 
@@ -162,12 +173,12 @@ export function HomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.2 }}
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60"
+          className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground md:flex"
         >
           <span>Scroll</span>
-          <span className="relative h-8 w-px bg-gradient-to-b from-white/30 to-transparent overflow-hidden">
+          <span className="relative h-8 w-px overflow-hidden bg-line-strong">
             <motion.span
-              className="absolute inset-x-0 top-0 h-3 bg-[oklch(0.7_0.18_250)]"
+              className="absolute inset-x-0 top-0 h-3 bg-brand"
               animate={{ y: [-12, 32] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             />
@@ -175,19 +186,22 @@ export function HomePage() {
         </motion.div>
       </section>
 
+      {/* ===== MARQUEE BAND ===== */}
+      <Marquee items={profile.focusAreas.slice(0, 6)} />
+
       {/* ===== ABOUT SECTION (right below the hero / scroll button) ===== */}
       <AboutSection />
 
       {/* ===== QUICK INTRODUCTION ===== */}
-      <section className="relative py-24 sm:py-32">
+      <section className="relative py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Quick Introduction"
             title={
               <>
                 Building at the intersection of{" "}
-                <span className="text-gradient-blue">software engineering</span> and{" "}
-                <span className="text-gradient-cyan">artificial intelligence</span>.
+                <span className="text-grad-brand">software engineering</span> and{" "}
+                <span className="text-grad-warm">artificial intelligence</span>.
               </>
             }
             description={profile.quickIntro}
@@ -201,9 +215,9 @@ export function HomePage() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: i * 0.04 }}
-                className="inline-flex items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.02] px-3.5 py-1.5 text-xs font-medium text-foreground/80 hover:border-white/[0.12] transition-colors"
+                className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium text-foreground/80 hover:border-line-strong transition-colors"
               >
-                <Sparkles className="h-3 w-3 text-[oklch(0.7_0.18_250)]" />
+                <Sparkles className="h-3 w-3 text-a1" />
                 {focus}
               </motion.span>
             ))}
@@ -212,7 +226,7 @@ export function HomePage() {
       </section>
 
       {/* ===== FEATURED SKILLS ===== */}
-      <section className="relative py-24 sm:py-32 border-t border-white/[0.04]">
+      <section className="relative py-20 sm:py-28 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <SectionHeading
@@ -244,7 +258,7 @@ export function HomePage() {
       </section>
 
       {/* ===== FEATURED PROJECTS ===== */}
-      <section className="relative py-24 sm:py-32 border-t border-white/[0.04]">
+      <section className="relative py-20 sm:py-28 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12">
             <SectionHeading
@@ -274,38 +288,51 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* ===== GITHUB SNAPSHOT ===== */}
-      <section className="relative py-24 sm:py-32 border-t border-white/[0.04]">
+      {/* ===== GITHUB SNAPSHOT =====
+           Rendered as a dark band so the page alternates cream → espresso →
+           cream, which is what gives the reference layout its rhythm. */}
+      <section className="relative border-t border-line py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl border border-white/[0.06] bg-card/40 p-8 sm:p-12">
+          <div
+            className="panel chamfer chamfer-tr relative overflow-hidden rounded-[32px] p-8 sm:p-12"
+            style={{ ["--chamfer-size" as string]: "56px" }}
+          >
             <div
-              className="pointer-events-none absolute inset-0 opacity-60"
+              className="pointer-events-none absolute inset-0 opacity-70"
               style={{
                 background:
-                  "radial-gradient(ellipse at top right, oklch(0.62 0.18 250 / 8%) 0%, transparent 60%)",
+                  "radial-gradient(ellipse at top right, color-mix(in oklab, var(--brand) 18%, transparent) 0%, transparent 62%)",
               }}
             />
             <div className="relative grid gap-8 md:grid-cols-[1.2fr_1fr] md:items-center">
               <div className="flex flex-col gap-4">
                 <SectionHeading
+                  onPanel
                   eyebrow="GitHub Snapshot"
-                  title={<>40+ repositories. 10,000+ contributions.</>}
+                  title={
+                    <>
+                      40+ repositories.{" "}
+                      <span className="text-brand">10,000+ contributions.</span>
+                    </>
+                  }
                   description="I push consistently across AI experiments, full-stack apps, embedded systems, and ML models. Stats reflect activity across all public + private repositories."
                 />
                 <button
                   onClick={() => navigate("github")}
-                  className="group mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-5 py-2.5 text-sm font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+                  className="group mt-2 inline-flex w-fit items-center gap-2 rounded-full bg-brand py-2 pl-5 pr-2 text-sm font-semibold text-ink transition-colors hover:bg-brand-deep"
                 >
                   View GitHub page
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--panel)] text-brand transition-transform duration-300 group-hover:translate-x-0.5">
+                    <ArrowUpRight className="h-4 w-4" strokeWidth={2.25} />
+                  </span>
                 </button>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <AnimatedStatBox label="Repositories" value={40} suffix="+" accent="blue" />
-                <AnimatedStatBox label="Contributions" value={10000} suffix="+" accent="purple" />
-                <AnimatedStatBox label="Stars earned" value={100} suffix="+" accent="cyan" />
-                <AnimatedStatBox label="Languages" value={5} suffix="+" accent="gold" />
+                <AnimatedStatBox label="Repositories" value={40} suffix="+" accent="amber" />
+                <AnimatedStatBox label="Contributions" value={10000} suffix="+" accent="rust" />
+                <AnimatedStatBox label="Stars earned" value={100} suffix="+" accent="golden" />
+                <AnimatedStatBox label="Languages" value={5} suffix="+" accent="sand" />
               </div>
             </div>
           </div>
@@ -313,7 +340,7 @@ export function HomePage() {
       </section>
 
       {/* ===== CURRENT FOCUS ===== */}
-      <section className="relative py-24 sm:py-32 border-t border-white/[0.04]">
+      <section className="relative py-20 sm:py-28 border-t border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <SectionHeading
             eyebrow="Current Focus"
@@ -331,7 +358,7 @@ export function HomePage() {
       </section>
 
       {/* ===== FINAL CTA ===== */}
-      <section className="relative py-24 sm:py-32 border-t border-white/[0.04]">
+      <section className="relative py-20 sm:py-28 border-t border-line">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -339,28 +366,30 @@ export function HomePage() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight leading-[1.05]">
-              Let's build intelligent products that{" "}
-              <span className="text-gradient-blue">solve real problems.</span>
+            <h2 className="font-display text-4xl font-extrabold leading-[1.05] tracking-[-0.035em] sm:text-5xl md:text-6xl">
+              Let&rsquo;s build intelligent products that{" "}
+              <span className="text-brand">solve real problems.</span>
             </h2>
-            <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
-              I'm open to internships, collaborations, freelance work and meaningful
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+              I&rsquo;m open to internships, collaborations, freelance work and meaningful
               conversations about AI, software engineering and automation.
             </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <MagneticButton
+            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <BrandButton
                 onClick={() => navigate("contact")}
-                className="group rounded-full bg-foreground px-7 py-3.5 text-sm font-medium text-background hover:bg-foreground/90 transition-colors"
+                variant="brand"
+                arrow="right"
+                size="lg"
               >
                 Start a conversation
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </MagneticButton>
-              <MagneticButton
+              </BrandButton>
+              <BrandButton
                 onClick={() => navigate("about")}
-                className="group rounded-full border border-white/[0.12] bg-white/[0.02] px-7 py-3.5 text-sm font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+                variant="outline"
+                size="lg"
               >
                 Read my story
-              </MagneticButton>
+              </BrandButton>
             </div>
           </motion.div>
         </div>
@@ -375,12 +404,52 @@ export function HomePage() {
   );
 }
 
+/** Rotating amber seal from the reference hero. SVG textPath + one CSS
+ *  rotation — no image, no library, and it respects reduced motion. */
+function HireMeBadge() {
+  const { navigate } = useAppRouter();
+  return (
+    <motion.button
+      type="button"
+      onClick={() => navigate("contact")}
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ scale: 1.06 }}
+      className="relative mt-12 hidden h-32 w-32 shrink-0 place-items-center rounded-full bg-foreground text-background focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background lg:grid"
+      aria-label="Get in touch — available for hire"
+    >
+      <svg
+        viewBox="0 0 100 100"
+        className="absolute inset-0 h-full w-full animate-[spin-slow_14s_linear_infinite]"
+        aria-hidden="true"
+      >
+        <defs>
+          <path
+            id="hire-me-arc"
+            d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"
+            fill="none"
+          />
+        </defs>
+        <text className="fill-background text-[10px] font-semibold uppercase tracking-[0.22em]">
+          <textPath href="#hire-me-arc" startOffset="0">
+            Hire me &middot; Available now &middot; Hire me &middot;
+          </textPath>
+        </text>
+      </svg>
+      <span className="grid h-11 w-11 place-items-center rounded-full bg-brand text-ink">
+        <ArrowRight className="h-5 w-5" strokeWidth={2.5} />
+      </span>
+    </motion.button>
+  );
+}
+
 /* ---------- About section (text left + profile picture right) ---------- */
 function AboutSection() {
   const { navigate } = useAppRouter();
 
   return (
-    <section className="relative py-20 sm:py-24 border-t border-white/[0.04]">
+    <section className="relative py-20 sm:py-24 border-t border-line">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:gap-16 lg:grid-cols-[1.3fr_1fr] lg:items-center">
           {/* Left: About text */}
@@ -396,7 +465,7 @@ function AboutSection() {
               title={
                 <>
                   A CS student building at the{" "}
-                  <span className="text-gradient-blue">intersection of software & AI</span>.
+                  <span className="text-grad-brand">intersection of software & AI</span>.
                 </>
               }
               description={profile.quickIntro}
@@ -404,12 +473,12 @@ function AboutSection() {
 
             {/* Quick facts grid */}
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <FactPill label="Age" value={`${profile.age}`} accent="blue" />
-              <FactPill label="Location" value={profile.location} accent="cyan" />
-              <FactPill label="Degree" value="BS CS" accent="purple" />
-              <FactPill label="University" value="Minhaj Univ." accent="blue" />
-              <FactPill label="Stage" value="4th Sem." accent="gold" />
-              <FactPill label="Focus" value="AI / Full-Stack" accent="cyan" />
+              <FactPill label="Age" value={`${profile.age}`} accent="amber" />
+              <FactPill label="Location" value={profile.location} accent="golden" />
+              <FactPill label="Degree" value="BS CS" accent="rust" />
+              <FactPill label="University" value="Minhaj Univ." accent="amber" />
+              <FactPill label="Stage" value="4th Sem." accent="sand" />
+              <FactPill label="Focus" value="AI / Full-Stack" accent="golden" />
             </div>
 
             {/* Focus areas */}
@@ -417,9 +486,9 @@ function AboutSection() {
               {profile.focusAreas.slice(0, 5).map((focus) => (
                 <span
                   key={focus}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1 text-xs text-foreground/80"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs text-foreground/80"
                 >
-                  <Sparkles className="h-3 w-3 text-[oklch(0.7_0.18_250)]" />
+                  <Sparkles className="h-3 w-3 text-a1" />
                   {focus}
                 </span>
               ))}
@@ -429,7 +498,7 @@ function AboutSection() {
             <div className="mt-4">
               <button
                 onClick={() => navigate("about")}
-                className="group inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-5 py-2.5 text-sm font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+                className="group inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-2 transition-colors"
               >
                 Read full story
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -445,13 +514,13 @@ function AboutSection() {
             transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="relative mx-auto w-full max-w-[360px]"
           >
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-card/40 backdrop-blur-md">
+            <div className="relative overflow-hidden card-surface rounded-[22px] backdrop-blur-md">
               {/* Top status bar */}
-              <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-[oklch(0.65_0.18_22_/_70%)]" />
-                  <span className="h-2 w-2 rounded-full bg-[oklch(0.78_0.13_90_/_70%)]" />
-                  <span className="h-2 w-2 rounded-full bg-[oklch(0.62_0.18_250_/_70%)]" />
+                  <span className="h-2 w-2 rounded-full bg-destructive/70" />
+                  <span className="h-2 w-2 rounded-full bg-a4/70" />
+                  <span className="h-2 w-2 rounded-full bg-a1/70" />
                 </div>
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                   mkl.profile
@@ -473,11 +542,11 @@ function AboutSection() {
                 />
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.62_0.18_250_/_0.08)] via-transparent to-[oklch(0.55_0.22_295_/_0.08)] mix-blend-overlay" />
+                <div className="absolute inset-0 bg-gradient-to-r from-a1/8 via-transparent to-a2/8 mix-blend-overlay" />
 
                 {/* Description overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-[oklch(0.7_0.18_250_/_80%)]">
+                  <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-a1/80">
                     {"// operator"}
                   </div>
                   <div className="font-display text-base font-semibold text-foreground">
@@ -490,11 +559,11 @@ function AboutSection() {
               </div>
 
               {/* Bottom tech tags */}
-              <div className="flex flex-wrap gap-1 border-t border-white/[0.06] p-2.5">
-                <span className="rounded-md border border-[oklch(0.62_0.18_250_/_30%)] bg-[oklch(0.62_0.18_250_/_0.06)] px-1.5 py-0.5 text-[9px] font-mono text-[oklch(0.7_0.18_250)]">AI</span>
-                <span className="rounded-md border border-[oklch(0.55_0.22_295_/_30%)] bg-[oklch(0.55_0.22_295_/_0.06)] px-1.5 py-0.5 text-[9px] font-mono text-[oklch(0.65_0.2_295)]">Full-Stack</span>
-                <span className="rounded-md border border-white/[0.08] bg-white/[0.02] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">Embedded</span>
-                <span className="rounded-md border border-white/[0.08] bg-white/[0.02] px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">Automation</span>
+              <div className="flex flex-wrap gap-1 border-t border-line p-2.5">
+                <span className="rounded-md border border-a1/30 bg-a1/6 px-1.5 py-0.5 text-[9px] font-mono text-a1">AI</span>
+                <span className="rounded-md border border-a2/30 bg-a2/6 px-1.5 py-0.5 text-[9px] font-mono text-a2">Full-Stack</span>
+                <span className="rounded-md border border-line bg-surface px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">Embedded</span>
+                <span className="rounded-md border border-line bg-surface px-1.5 py-0.5 text-[9px] font-mono text-muted-foreground">Automation</span>
               </div>
             </div>
 
@@ -503,7 +572,7 @@ function AboutSection() {
               className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl opacity-30 blur-2xl"
               style={{
                 background:
-                  "radial-gradient(circle at 30% 30%, oklch(0.62 0.18 250 / 40%) 0%, transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.55 0.22 295 / 40%) 0%, transparent 60%)",
+                  "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--a1) 40%, transparent) 0%, transparent 60%), radial-gradient(circle at 70% 70%, color-mix(in oklab, var(--a2) 40%, transparent) 0%, transparent 60%)",
               }}
             />
           </motion.div>
@@ -520,16 +589,17 @@ function FactPill({
 }: {
   label: string;
   value: string;
-  accent: "blue" | "purple" | "cyan" | "gold";
+  accent: AccentColor;
 }) {
-  const colors = {
-    blue: "text-[oklch(0.7_0.18_250)] border-[oklch(0.62_0.18_250_/_30%)] bg-[oklch(0.62_0.18_250_/_0.06)]",
-    purple: "text-[oklch(0.65_0.2_295)] border-[oklch(0.55_0.22_295_/_30%)] bg-[oklch(0.55_0.22_295_/_0.06)]",
-    cyan: "text-[oklch(0.78_0.15_195)] border-[oklch(0.72_0.15_195_/_30%)] bg-[oklch(0.72_0.15_195_/_0.06)]",
-    gold: "text-[oklch(0.82_0.13_90)] border-[oklch(0.78_0.13_90_/_30%)] bg-[oklch(0.78_0.13_90_/_0.06)]",
-  };
   return (
-    <div className={`rounded-xl border px-3 py-2.5 ${colors[accent]}`}>
+    <div
+      className={cn(
+        "rounded-2xl border px-3 py-2.5",
+        accentTextClass[accent],
+        accentBorderClass[accent],
+        accentBgClass[accent]
+      )}
+    >
       <div className="font-mono text-[9px] uppercase tracking-[0.16em] opacity-70">
         {label}
       </div>
@@ -552,12 +622,6 @@ function SkillPreviewCard({
   onClick: () => void;
 }) {
   const accent = category.accent;
-  const accentClasses: Record<string, string> = {
-    blue: "border-[oklch(0.62_0.18_250_/_30%)] text-[oklch(0.7_0.18_250)]",
-    purple: "border-[oklch(0.55_0.22_295_/_30%)] text-[oklch(0.65_0.2_295)]",
-    cyan: "border-[oklch(0.72_0.15_195_/_30%)] text-[oklch(0.78_0.15_195)]",
-    gold: "border-[oklch(0.78_0.13_90_/_30%)] text-[oklch(0.82_0.13_90)]",
-  };
 
   return (
     <motion.button
@@ -567,13 +631,14 @@ function SkillPreviewCard({
       transition={{ duration: 0.5, delay: Math.min(index * 0.06, 0.4), ease: [0.16, 1, 0.3, 1] }}
       whileHover={{ y: -2 }}
       onClick={onClick}
-      className="group relative flex flex-col gap-4 rounded-2xl border border-white/[0.06] bg-card/40 p-5 text-left transition-colors hover:border-white/[0.12] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      className="group relative flex flex-col gap-4 card-surface rounded-[22px] p-5 text-left transition-colors hover:border-line-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
     >
       <div className="flex items-center justify-between">
         <span
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider",
-            accentClasses[accent]
+            accentBorderClass[accent],
+            accentTextClass[accent]
           )}
         >
           <span className="h-1 w-1 rounded-full bg-current" />
@@ -586,40 +651,13 @@ function SkillPreviewCard({
         {skills.map((s) => (
           <span
             key={s.name}
-            className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[11px] font-mono text-foreground/80"
+            className="rounded-md border border-line bg-surface px-2 py-0.5 text-[11px] font-mono text-foreground/80"
           >
             {s.name}
           </span>
         ))}
       </div>
     </motion.button>
-  );
-}
-
-function StatBox({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent: "blue" | "purple" | "cyan" | "gold";
-}) {
-  const colors = {
-    blue: "text-[oklch(0.7_0.18_250)]",
-    purple: "text-[oklch(0.65_0.2_295)]",
-    cyan: "text-[oklch(0.78_0.15_195)]",
-    gold: "text-[oklch(0.82_0.13_90)]",
-  };
-  return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 backdrop-blur-sm">
-      <div className={cn("font-display text-3xl font-semibold tabular-nums", colors[accent])}>
-        {value}
-      </div>
-      <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </div>
-    </div>
   );
 }
 
@@ -630,9 +668,9 @@ function FocusCard({ label, index }: { label: string; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: Math.min(index * 0.05, 0.4), ease: [0.16, 1, 0.3, 1] }}
-      className="group relative flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-card/40 p-4 transition-colors hover:border-white/[0.12]"
+      className="group relative flex items-center gap-3 card-surface rounded-[22px] p-4 transition-colors hover:border-line-strong"
     >
-      <span className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] font-mono text-xs text-muted-foreground">
+      <span className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface font-mono text-xs text-muted-foreground">
         0{index + 1}
       </span>
       <span className="text-sm font-medium text-foreground/90">{label}</span>
@@ -653,7 +691,7 @@ function AnimatedStatBox({
   label: string;
   value: number;
   suffix?: string;
-  accent: "blue" | "purple" | "cyan" | "gold";
+  accent: AccentColor;
 }) {
   const ref = React.useRef<HTMLDivElement>(null);
   // FIX: the initial state used to be 0, so the server HTML (and anyone
@@ -662,12 +700,6 @@ function AnimatedStatBox({
   // value first and treat the count-up as a progressive enhancement.
   const [display, setDisplay] = React.useState(value);
 
-  const colors = {
-    blue: "text-[oklch(0.7_0.18_250)]",
-    purple: "text-[oklch(0.65_0.2_295)]",
-    cyan: "text-[oklch(0.78_0.15_195)]",
-    gold: "text-[oklch(0.82_0.13_90)]",
-  };
 
   React.useEffect(() => {
     const el = ref.current;
@@ -710,11 +742,15 @@ function AnimatedStatBox({
   };
 
   return (
-    <div ref={ref} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 backdrop-blur-sm">
-      <div className={cn("font-display text-3xl font-semibold tabular-nums", colors[accent])}>
-        {formatNum(display)}{suffix}
+    <div
+      ref={ref}
+      className="rounded-[22px] border border-[var(--panel-line)] bg-[var(--panel-line)] p-4"
+    >
+      <div className={cn("font-display text-3xl font-extrabold tabular-nums", accentTextClass[accent])}>
+        {formatNum(display)}
+        {suffix}
       </div>
-      <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-[var(--panel-muted)]">
         {label}
       </div>
     </div>

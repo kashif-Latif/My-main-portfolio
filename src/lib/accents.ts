@@ -1,44 +1,67 @@
 /**
- * Shared accent color mapping helpers.
- * Used across cards, badges, lines, etc.
+ * Shared accent mapping.
+ *
+ * The palette lives in `globals.css` as --a1..--a4 and flips with the theme,
+ * so these helpers must never contain a raw colour value — only token names
+ * and Tailwind classes that resolve to them. Add an accent here and in
+ * globals.css together; nothing else needs to change.
+ *
+ *   amber  -> --a1  primary brand amber
+ *   rust   -> --a2  burnt orange
+ *   golden -> --a3  warm yellow
+ *   sand   -> --a4  espresso (light) / sand (dark)
  */
 
-export type AccentColor = "blue" | "purple" | "cyan" | "gold";
+export type AccentColor = "amber" | "rust" | "golden" | "sand";
 
-export const accentHex: Record<AccentColor, string> = {
-  blue: "oklch(0.62 0.18 250)",
-  purple: "oklch(0.55 0.22 295)",
-  cyan: "oklch(0.72 0.15 195)",
-  gold: "oklch(0.78 0.13 90)",
+/** Raw CSS value — for inline styles, SVG fills and three.js materials. */
+export const accentVar: Record<AccentColor, string> = {
+  amber: "var(--a1)",
+  rust: "var(--a2)",
+  golden: "var(--a3)",
+  sand: "var(--a4)",
 };
 
-export const accentHexDim: Record<AccentColor, string> = {
-  blue: "oklch(0.62 0.18 250 / 30%)",
-  purple: "oklch(0.55 0.22 295 / 30%)",
-  cyan: "oklch(0.72 0.15 195 / 30%)",
-  gold: "oklch(0.78 0.13 90 / 30%)",
+/** Same colour at 30% alpha, for soft fills and hairlines. */
+export const accentVarDim: Record<AccentColor, string> = {
+  amber: "color-mix(in oklab, var(--a1) 30%, transparent)",
+  rust: "color-mix(in oklab, var(--a2) 30%, transparent)",
+  golden: "color-mix(in oklab, var(--a3) 30%, transparent)",
+  sand: "color-mix(in oklab, var(--a4) 30%, transparent)",
 };
 
-/** Tailwind text color class for each accent */
+/** Deprecated aliases kept so older call sites keep compiling. */
+export const accentHex = accentVar;
+export const accentHexDim = accentVarDim;
+
+/** Text colour class per accent. */
 export const accentTextClass: Record<AccentColor, string> = {
-  blue: "text-[oklch(0.7_0.18_250)]",
-  purple: "text-[oklch(0.65_0.2_295)]",
-  cyan: "text-[oklch(0.78_0.15_195)]",
-  gold: "text-[oklch(0.82_0.13_90)]",
+  amber: "text-a1",
+  rust: "text-a2",
+  golden: "text-a3",
+  sand: "text-a4",
 };
 
-/** Tailwind background tint class for each accent */
+/** Background tint class per accent. */
 export const accentBgClass: Record<AccentColor, string> = {
-  blue: "bg-[oklch(0.62_0.18_250_/_12%)]",
-  purple: "bg-[oklch(0.55_0.22_295_/_12%)]",
-  cyan: "bg-[oklch(0.72_0.15_195_/_12%)]",
-  gold: "bg-[oklch(0.78_0.13_90_/_12%)]",
+  amber: "bg-a1/12",
+  rust: "bg-a2/12",
+  golden: "bg-a3/12",
+  sand: "bg-a4/12",
 };
 
-/** Tailwind border tint class for each accent */
+/** Border tint class per accent. */
 export const accentBorderClass: Record<AccentColor, string> = {
-  blue: "border-[oklch(0.62_0.18_250_/_35%)]",
-  purple: "border-[oklch(0.55_0.22_295_/_35%)]",
-  cyan: "border-[oklch(0.72_0.15_195_/_35%)]",
-  gold: "border-[oklch(0.78_0.13_90_/_35%)]",
+  amber: "border-a1/35",
+  rust: "border-a2/35",
+  golden: "border-a3/35",
+  sand: "border-a4/35",
+};
+
+/** Solid-fill class per accent — used for dots, bars and progress tracks. */
+export const accentFillClass: Record<AccentColor, string> = {
+  amber: "bg-a1",
+  rust: "bg-a2",
+  golden: "bg-a3",
+  sand: "bg-a4",
 };

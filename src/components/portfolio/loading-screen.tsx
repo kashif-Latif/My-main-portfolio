@@ -11,20 +11,27 @@ interface LoadingScreenProps {
 const indicators = ["Code", "Data", "AI", "Systems"];
 
 // "Muhammad KL" split into individual letters for staggered animation.
-// Each letter has a color: blue for M and K, white for the rest, purple for L.
-// Using hex colors (not oklch) for maximum mobile browser compatibility.
+// Letter colours come from theme tokens, not fixed hex. The old values were
+// cream-on-near-black; on the cream theme most of the name rendered invisible.
+// --a1 is the contrast-safe accent on both grounds.
+const BRAND = "var(--a1)";
+const INK = "var(--foreground)";
+const DEEP = "var(--a2)";
+const GLOW = "color-mix(in oklab, var(--a1) 45%, transparent)";
+const GLOW_DEEP = "color-mix(in oklab, var(--a2) 45%, transparent)";
+
 const letters = [
-  { char: "M", color: "#5a8dff", glow: "rgba(90, 141, 255, 0.6)" },   // blue
-  { char: "u", color: "#e8e6e1", glow: "transparent" },               // white
-  { char: "h", color: "#e8e6e1", glow: "transparent" },
-  { char: "a", color: "#e8e6e1", glow: "transparent" },
-  { char: "m", color: "#e8e6e1", glow: "transparent" },
-  { char: "m", color: "#e8e6e1", glow: "transparent" },
-  { char: "a", color: "#e8e6e1", glow: "transparent" },
-  { char: "d", color: "#e8e6e1", glow: "transparent" },
-  { char: " ", color: "transparent", glow: "transparent" },           // gap
-  { char: "K", color: "#5a8dff", glow: "rgba(90, 141, 255, 0.6)" },   // blue
-  { char: "L", color: "#9b8cff", glow: "rgba(155, 140, 255, 0.6)" },  // purple
+  { char: "M", color: BRAND, glow: GLOW },
+  { char: "u", color: INK, glow: "transparent" },
+  { char: "h", color: INK, glow: "transparent" },
+  { char: "a", color: INK, glow: "transparent" },
+  { char: "m", color: INK, glow: "transparent" },
+  { char: "m", color: INK, glow: "transparent" },
+  { char: "a", color: INK, glow: "transparent" },
+  { char: "d", color: INK, glow: "transparent" },
+  { char: " ", color: "transparent", glow: "transparent" },
+  { char: "K", color: BRAND, glow: GLOW },
+  { char: "L", color: DEEP, glow: GLOW_DEEP },
 ];
 
 /**
@@ -124,7 +131,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             className="absolute inset-0 opacity-30"
             style={{
               backgroundImage:
-                "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+                "linear-gradient(to right, var(--line) 1px, transparent 1px), linear-gradient(to bottom, var(--line) 1px, transparent 1px)",
               backgroundSize: "48px 48px",
             }}
           />
@@ -135,7 +142,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             className="absolute left-1/2 top-1/2 h-[40vmin] w-[40vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-3xl"
             style={{
               background:
-                "radial-gradient(circle, rgba(90, 141, 255, 0.5) 0%, transparent 70%)",
+                "radial-gradient(circle, color-mix(in oklab, var(--brand) 45%, transparent) 0%, transparent 70%)",
             }}
           />
 
@@ -189,8 +196,8 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               ease: "easeOut",
             }}
             style={{
-              background: "linear-gradient(to right, transparent, #5a8dff, transparent)",
-              boxShadow: "0 0 8px rgba(90, 141, 255, 0.6), 0 0 16px rgba(90, 141, 255, 0.4)",
+              background: "linear-gradient(to right, transparent, var(--a1), transparent)",
+              boxShadow: "0 0 8px color-mix(in oklab, var(--a1) 55%, transparent)",
               willChange: "width, opacity",
             }}
           />
@@ -212,7 +219,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               >
                 <motion.span
                   className="h-1.5 w-1.5 rounded-full"
-                  style={{ backgroundColor: "#5a8dff" }}
+                  style={{ backgroundColor: "var(--a1)" }}
                   animate={{ opacity: [0.3, 1, 0.3] }}
                   transition={{ duration: 1, delay: 0.55 + i * 0.08, repeat: Infinity }}
                 />
@@ -222,13 +229,13 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
           </motion.div>
 
           {/* Progress bar */}
-          <div className="relative z-10 mt-6 h-px w-44 sm:w-56 overflow-hidden bg-white/10">
+          <div className="relative z-10 mt-6 h-px w-44 sm:w-56 overflow-hidden bg-surface-2">
             <motion.div
               className="h-full"
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
               transition={{ duration: totalDuration / 1000, ease: "linear" }}
-              style={{ backgroundColor: "#5a8dff", boxShadow: "0 0 8px rgba(90, 141, 255, 0.8)" }}
+              style={{ backgroundColor: "var(--a1)", boxShadow: "0 0 8px color-mix(in oklab, var(--a1) 70%, transparent)" }}
             />
           </div>
 

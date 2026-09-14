@@ -6,6 +6,7 @@ import { Menu, X, Command } from "lucide-react";
 import { navItems, RouteId } from "@/data/navigation";
 import { useAppRouter } from "@/hooks/use-app-router";
 import { profile } from "@/data/profile";
+import { ThemeToggle } from "@/components/portfolio/theme-toggle";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
@@ -13,12 +14,20 @@ interface NavbarProps {
   onOpenTerminal: () => void;
 }
 
+/** Amber disc + monogram, as on the reference wordmark. */
+function Logo() {
+  return (
+    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand font-display text-[13px] font-extrabold tracking-tight text-ink">
+      K
+    </span>
+  );
+}
+
 export function Navbar({ onOpenCommand, onOpenTerminal }: NavbarProps) {
   const { route, navigate } = useAppRouter();
   const [scrolled, setScrolled] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
-  // Track scroll for translucent navbar
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -26,13 +35,9 @@ export function Navbar({ onOpenCommand, onOpenTerminal }: NavbarProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll when mobile menu is open
+  // Lock body scroll while the mobile sheet is open
   React.useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -47,46 +52,38 @@ export function Navbar({ onOpenCommand, onOpenTerminal }: NavbarProps) {
     <>
       <header
         className={cn(
-          "fixed top-0 inset-x-0 z-50 transition-all duration-500",
-          scrolled
-            ? "py-2"
-            : "py-4"
+          "fixed inset-x-0 top-0 z-50 transition-all duration-500",
+          scrolled ? "py-2" : "py-4"
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <nav
             className={cn(
-              "flex items-center justify-between rounded-full transition-all duration-500",
-              scrolled
-                ? "glass-strong px-4 py-2 shadow-lg shadow-black/20"
-                : "px-4 py-2 bg-transparent"
+              "panel flex items-center justify-between gap-3 rounded-full p-2 transition-shadow duration-500",
+              scrolled ? "shadow-lg shadow-ink/20" : "shadow-sm shadow-ink/10"
             )}
             aria-label="Primary navigation"
           >
-            {/* Logo */}
+            {/* Wordmark */}
             <button
               onClick={() => handleNavigate("home")}
-              className="group flex items-center gap-2.5 focus:outline-none"
+              className="group flex items-center gap-2.5 rounded-full pr-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand"
               aria-label="Go to home"
             >
-              <span
-                className="relative grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-gradient-to-br from-[oklch(0.62_0.18_250_/_20%)] to-[oklch(0.55_0.22_295_/_20%)] font-display text-sm font-semibold tracking-wider text-white"
-              >
-                MKL
-                <span className="absolute inset-0 rounded-xl bg-[oklch(0.62_0.18_250_/_0%)] transition-colors duration-500 group-hover:bg-[oklch(0.62_0.18_250_/_12%)]" />
-              </span>
-              <span className="hidden sm:flex flex-col leading-tight">
-                <span className="font-display text-[13px] font-medium tracking-tight text-foreground">
+              <Logo />
+              <span className="hidden flex-col items-start leading-tight sm:flex">
+                <span className="font-display text-[13px] font-bold tracking-tight text-[var(--panel-foreground)]">
                   {profile.name}
+                  <span className="text-brand">.</span>
                 </span>
-                <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="text-[10px] uppercase tracking-[0.18em] text-[var(--panel-muted)]">
                   {profile.tagline}
                 </span>
               </span>
             </button>
 
-            {/* Desktop nav */}
-            <div className="hidden lg:flex items-center gap-1">
+            {/* Desktop links */}
+            <div className="hidden items-center gap-0.5 lg:flex">
               {navItems.map((item) => {
                 const active = route === item.id;
                 return (
@@ -94,130 +91,145 @@ export function Navbar({ onOpenCommand, onOpenTerminal }: NavbarProps) {
                     key={item.id}
                     onClick={() => handleNavigate(item.id)}
                     className={cn(
-                      "relative px-3.5 py-1.5 text-[13px] font-medium tracking-tight transition-colors duration-300 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                      "relative rounded-full px-3.5 py-2 text-[13px] font-medium tracking-tight transition-colors duration-300",
+                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand",
                       active
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "text-brand"
+                        : "text-[var(--panel-muted)] hover:text-[var(--panel-foreground)]"
                     )}
                     aria-current={active ? "page" : undefined}
                   >
+                    <span className="relative">{item.label}</span>
                     {active && (
                       <motion.span
                         layoutId="nav-active"
-                        className="absolute inset-0 rounded-full bg-white/[0.06] border border-white/[0.08]"
-                        transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        className="absolute inset-x-3.5 bottom-1 h-0.5 rounded-full bg-brand"
+                        transition={{ type: "spring", stiffness: 380, damping: 32 }}
                       />
                     )}
-                    <span className="relative">{item.label}</span>
                   </button>
                 );
               })}
             </div>
 
-            {/* Right actions */}
+            {/* Right cluster */}
             <div className="flex items-center gap-2">
-              {/* Command palette trigger - desktop */}
               <button
                 onClick={onOpenCommand}
-                className="hidden md:flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:border-white/[0.16] transition-all duration-300"
+                className="hidden items-center gap-1.5 rounded-full border border-[var(--panel-line)] px-2.5 py-1.5 text-[11px] text-[var(--panel-muted)] transition-colors hover:text-[var(--panel-foreground)] md:flex"
                 aria-label="Open command palette"
               >
                 <Command className="h-3 w-3" />
                 <kbd className="font-mono text-[10px]">K</kbd>
               </button>
 
-              {/* Mobile menu trigger */}
+              <ThemeToggle />
+
+              <button
+                onClick={() => handleNavigate("contact")}
+                className="hidden rounded-full bg-[var(--panel-foreground)] px-5 py-2 text-[13px] font-semibold tracking-tight text-ink transition-transform duration-300 hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:block"
+              >
+                Let&rsquo;s Talk
+              </button>
+
               <button
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden grid h-9 w-9 place-items-center rounded-full border border-white/[0.08] bg-white/[0.02] text-foreground hover:bg-white/[0.06] transition-colors"
+                className="grid h-9 w-9 place-items-center rounded-full bg-brand text-ink lg:hidden"
                 aria-label="Open menu"
                 aria-expanded={mobileOpen}
               >
-                <Menu className="h-4 w-4" />
+                <Menu className="h-4 w-4" strokeWidth={2.25} />
               </button>
             </div>
           </nav>
         </div>
       </header>
 
-      {/* Mobile fullscreen menu */}
+      {/* Mobile sheet */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             className="fixed inset-0 z-[60] lg:hidden"
           >
             <div
-              className="absolute inset-0 bg-background/80 backdrop-blur-2xl"
+              className="absolute inset-0 bg-background"
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
-              initial={{ y: -20, opacity: 0 }}
+              initial={{ y: -16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -20, opacity: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="relative h-full flex flex-col"
+              exit={{ y: -16, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="relative flex h-full flex-col"
             >
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 pt-6 pb-4">
-                <span className="font-display text-sm uppercase tracking-[0.2em] text-muted-foreground">
-                  Navigate
+              <div className="flex items-center justify-between px-5 pt-5 pb-4">
+                <span className="flex items-center gap-2.5">
+                  <Logo />
+                  <span className="font-display text-sm font-bold tracking-tight text-foreground">
+                    {profile.name}
+                    <span className="text-brand">.</span>
+                  </span>
                 </span>
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="grid h-10 w-10 place-items-center rounded-full border border-white/[0.08] bg-white/[0.02] text-foreground"
+                  className="grid h-10 w-10 place-items-center rounded-full bg-brand text-ink"
                   aria-label="Close menu"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" strokeWidth={2.25} />
                 </button>
               </div>
 
-              {/* Menu items */}
-              <div className="flex-1 overflow-y-auto scrollbar-premium px-6 pt-4">
-                <ul className="flex flex-col gap-1">
+              <div className="scrollbar-premium flex-1 overflow-y-auto px-5 pt-2">
+                <ul className="flex flex-col gap-1.5">
                   {navItems.map((item, idx) => {
                     const active = route === item.id;
                     return (
                       <motion.li
                         key={item.id}
-                        initial={{ x: -20, opacity: 0 }}
+                        initial={{ x: -16, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{
-                          duration: 0.4,
-                          delay: 0.05 + idx * 0.05,
+                          duration: 0.35,
+                          delay: 0.04 + idx * 0.04,
                           ease: [0.16, 1, 0.3, 1],
                         }}
                       >
                         <button
                           onClick={() => handleNavigate(item.id)}
                           className={cn(
-                            "group flex w-full items-center justify-between rounded-2xl px-4 py-4 text-left transition-all duration-300",
-                            active
-                              ? "bg-white/[0.05] border border-white/[0.08]"
-                              : "border border-transparent hover:bg-white/[0.03]"
+                            "group flex w-full items-center justify-between rounded-3xl px-5 py-4 text-left transition-colors duration-300",
+                            active ? "panel" : "border border-line bg-card"
                           )}
                           aria-current={active ? "page" : undefined}
                         >
-                          <div className="flex flex-col gap-0.5">
+                          <span className="flex flex-col gap-0.5">
                             <span
                               className={cn(
-                                "font-display text-2xl tracking-tight transition-colors",
-                                active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                                "font-display text-2xl font-bold tracking-tight",
+                                active ? "text-brand" : "text-foreground"
                               )}
                             >
                               {item.label}
                             </span>
-                            <span className="text-[11px] text-muted-foreground/80">
+                            <span
+                              className={cn(
+                                "text-[11px]",
+                                active
+                                  ? "text-[var(--panel-muted)]"
+                                  : "text-muted-foreground"
+                              )}
+                            >
                               {item.description}
                             </span>
-                          </div>
+                          </span>
                           <span
                             className={cn(
-                              "font-display text-xs tabular-nums transition-colors",
-                              active ? "text-[oklch(0.7_0.18_250)]" : "text-muted-foreground/40"
+                              "font-display text-xs font-bold tabular-nums",
+                              active ? "text-brand" : "text-muted-foreground/50"
                             )}
                           >
                             0{idx + 1}
@@ -229,16 +241,22 @@ export function Navbar({ onOpenCommand, onOpenTerminal }: NavbarProps) {
                 </ul>
               </div>
 
-              {/* Footer */}
-              <div className="px-6 py-6 border-t border-white/[0.06]">
+              <div className="flex items-center gap-2 border-t border-line px-5 py-5">
+                <button
+                  onClick={() => handleNavigate("contact")}
+                  className="flex-1 rounded-full bg-brand px-5 py-3.5 text-sm font-semibold text-ink"
+                >
+                  Let&rsquo;s Talk
+                </button>
                 <button
                   onClick={() => {
                     setMobileOpen(false);
                     onOpenTerminal();
                   }}
-                  className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="rounded-full border border-line bg-card px-5 py-3.5 font-mono text-sm text-muted-foreground"
+                  aria-label="Open terminal"
                 >
-                  <span className="font-mono">$ open terminal</span>
+                  $_
                 </button>
               </div>
             </motion.div>

@@ -15,10 +15,10 @@ export function Footer() {
   };
 
   return (
-    <footer className="relative mt-auto border-t border-white/[0.06] bg-background/50">
+    <footer className="relative mt-auto border-t border-line bg-background/50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
         {/* Famous quote banner */}
-        <div className="mb-10 flex flex-col items-center gap-2 border-b border-white/[0.06] pb-8 text-center">
+        <div className="mb-10 flex flex-col items-center gap-2 border-b border-line pb-8 text-center">
           <blockquote className="max-w-3xl font-display text-lg sm:text-xl italic text-muted-foreground leading-relaxed">
             &ldquo;{siteConfig.famousQuote.text}&rdquo;
           </blockquote>
@@ -35,7 +35,7 @@ export function Footer() {
               className="flex items-center gap-2.5 group w-fit"
               aria-label="Go to home"
             >
-              <span className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-gradient-to-br from-[oklch(0.62_0.18_250_/_20%)] to-[oklch(0.55_0.22_295_/_20%)] font-display text-sm font-semibold tracking-wider text-white">
+              <span className="grid h-9 w-9 place-items-center rounded-xl border border-line-strong bg-gradient-to-br from-a1/20 to-a2/20 font-display text-sm font-semibold tracking-wider text-white">
                 MKL
               </span>
               <span className="font-display text-sm font-medium tracking-tight">
@@ -50,7 +50,7 @@ export function Footer() {
                 href={siteConfig.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:text-foreground hover:border-white/[0.16] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-muted-foreground hover:text-foreground hover:border-line-strong transition-all"
                 aria-label="GitHub profile"
               >
                 <Github className="h-4 w-4" />
@@ -59,7 +59,7 @@ export function Footer() {
                 href={siteConfig.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:text-foreground hover:border-white/[0.16] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-muted-foreground hover:text-foreground hover:border-line-strong transition-all"
                 aria-label="LinkedIn profile"
               >
                 <Linkedin className="h-4 w-4" />
@@ -68,14 +68,14 @@ export function Footer() {
                 href={gmailComposeUrl(siteConfig.email, "Portfolio enquiry")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:text-foreground hover:border-white/[0.16] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-muted-foreground hover:text-foreground hover:border-line-strong transition-all"
                 aria-label="Send email via Gmail"
               >
                 <Mail className="h-4 w-4" />
               </a>
               <a
                 href={`tel:${siteConfig.phone.replace(/\s/g, "")}`}
-                className="grid h-9 w-9 place-items-center rounded-lg border border-white/[0.06] bg-white/[0.02] text-muted-foreground hover:text-foreground hover:border-white/[0.16] transition-all"
+                className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface text-muted-foreground hover:text-foreground hover:border-line-strong transition-all"
                 aria-label="Call phone"
               >
                 <Phone className="h-4 w-4" />
@@ -120,7 +120,7 @@ export function Footer() {
             </p>
             <button
               onClick={() => navigate("contact")}
-              className="mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.02] px-4 py-2 text-xs font-medium text-foreground hover:bg-white/[0.06] transition-colors"
+              className="mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-xs font-medium text-foreground hover:bg-surface-2 transition-colors"
             >
               Start a conversation
             </button>
@@ -128,7 +128,7 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-white/[0.04] pt-6">
+        <div className="mt-10 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 border-t border-line pt-6">
           <p className="text-xs text-muted-foreground">
             © {year} {profile.name}. Built with Next.js, Three.js & Framer Motion.
           </p>
@@ -137,7 +137,7 @@ export function Footer() {
             className="group flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors self-start sm:self-auto"
             aria-label="Back to top"
           >
-            <span className="grid h-8 w-8 place-items-center rounded-full border border-white/[0.06] bg-white/[0.02] group-hover:border-white/[0.16] transition-colors">
+            <span className="grid h-8 w-8 place-items-center rounded-full border border-line bg-surface group-hover:border-line-strong transition-colors">
               <ArrowUp className="h-3.5 w-3.5" />
             </span>
             Back to top

@@ -33,39 +33,39 @@ export type SkillCategory =
 export interface SkillCategoryMeta {
   name: SkillCategory;
   description: string;
-  accent: "blue" | "purple" | "cyan" | "gold";
+  accent: "amber" | "rust" | "golden" | "sand";
 }
 
 export const skillCategories: SkillCategoryMeta[] = [
   {
     name: "Programming Languages",
     description: "Core languages used across software & AI work.",
-    accent: "blue",
+    accent: "amber",
   },
   {
     name: "Frontend",
     description: "Interfaces, design systems & 3D experiences for the web.",
-    accent: "cyan",
+    accent: "golden",
   },
   {
     name: "Backend",
     description: "APIs, services & server-side architecture.",
-    accent: "purple",
+    accent: "rust",
   },
   {
     name: "Databases",
     description: "Relational & serverless data layers.",
-    accent: "gold",
+    accent: "sand",
   },
   {
     name: "DevOps & Tools",
     description: "Tooling, deployment & developer workflow.",
-    accent: "blue",
+    accent: "amber",
   },
   {
     name: "AI & Machine Learning",
     description: "Classical ML through modern agentic systems.",
-    accent: "purple",
+    accent: "rust",
   },
 ];
 
@@ -128,27 +128,27 @@ export const skills: Skill[] = [
 
 export const statusMeta: Record<
   SkillStatus,
-  { label: string; description: string; accent: "blue" | "purple" | "cyan" | "gold" }
+  { label: string; description: string; accent: "amber" | "rust" | "golden" | "sand" }
 > = {
   mastered: {
     label: "Solid",
     description: "Established working knowledge — can ship confidently.",
-    accent: "cyan",
+    accent: "golden",
   },
   proficient: {
     label: "Proficient",
     description: "Working knowledge — actively used in projects.",
-    accent: "blue",
+    accent: "amber",
   },
   learning: {
     label: "Learning",
     description: "Currently studying & experimenting.",
-    accent: "purple",
+    accent: "rust",
   },
   future: {
     label: "Future",
     description: "Planned specialization area.",
-    accent: "gold",
+    accent: "sand",
   },
 };
 

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, FileText, X, Brain, Code2, Layers } from "lucide-react";
 import { siteConfig } from "@/data/profile";
+import { AccentColor } from "@/lib/accents";
 import { cn } from "@/lib/utils";
 
 interface ResumeMenuProps {
@@ -12,10 +13,13 @@ interface ResumeMenuProps {
   variant?: "primary" | "ghost" | "outline";
 }
 
-const accentClasses: Record<string, { border: string; text: string; bg: string }> = {
-  blue: { border: "border-[oklch(0.62_0.18_250_/_30%)]", text: "text-[oklch(0.7_0.18_250)]", bg: "bg-[oklch(0.62_0.18_250_/_0.08)]" },
-  cyan: { border: "border-[oklch(0.72_0.15_195_/_30%)]", text: "text-[oklch(0.78_0.15_195)]", bg: "bg-[oklch(0.72_0.15_195_/_0.08)]" },
-  purple: { border: "border-[oklch(0.55_0.22_295_/_30%)]", text: "text-[oklch(0.65_0.2_295)]", bg: "bg-[oklch(0.55_0.22_295_/_0.08)]" },
+// Typed against AccentColor on purpose: a `Record<string, …>` here let a
+// renamed accent silently resolve to undefined at runtime.
+const accentClasses: Record<AccentColor, { border: string; text: string; bg: string }> = {
+  amber: { border: "border-a1/30", text: "text-a1", bg: "bg-a1/8" },
+  rust: { border: "border-a2/30", text: "text-a2", bg: "bg-a2/8" },
+  golden: { border: "border-a3/30", text: "text-a3", bg: "bg-a3/8" },
+  sand: { border: "border-a4/30", text: "text-a4", bg: "bg-a4/8" },
 };
 
 const resumeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -26,8 +30,8 @@ const resumeIcons: Record<string, React.ComponentType<{ className?: string }>> =
 
 const variantClasses: Record<string, string> = {
   primary: "bg-foreground text-background hover:bg-foreground/90",
-  ghost: "border border-white/[0.12] bg-white/[0.02] text-foreground backdrop-blur-md hover:bg-white/[0.06]",
-  outline: "border border-white/[0.08] bg-transparent text-muted-foreground hover:text-foreground hover:border-white/[0.16]",
+  ghost: "border border-line-strong bg-surface text-foreground backdrop-blur-md hover:bg-surface-2",
+  outline: "border border-line bg-transparent text-muted-foreground hover:text-foreground hover:border-line-strong",
 };
 
 export function ResumeMenu({ className, variant = "outline" }: ResumeMenuProps) {
@@ -101,12 +105,12 @@ export function ResumeMenu({ className, variant = "outline" }: ResumeMenuProps) 
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 16 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-card/95 backdrop-blur-2xl shadow-2xl shadow-black/50"
+                className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-line bg-card backdrop-blur-2xl shadow-2xl shadow-ink/25"
               >
                 {/* Header */}
-                <div className="flex items-start justify-between border-b border-white/[0.06] px-5 py-4">
+                <div className="flex items-start justify-between border-b border-line px-5 py-4">
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-[oklch(0.7_0.18_250)]">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-a1">
                       Choose a resume
                     </div>
                     <div className="mt-1 font-display text-lg font-semibold text-foreground">
@@ -118,7 +122,7 @@ export function ResumeMenu({ className, variant = "outline" }: ResumeMenuProps) 
                   </div>
                   <button
                     onClick={() => setOpen(false)}
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition-colors"
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-2 transition-colors"
                     aria-label="Close"
                   >
                     <X className="h-4 w-4" />
@@ -134,7 +138,7 @@ export function ResumeMenu({ className, variant = "outline" }: ResumeMenuProps) 
                       <button
                         key={resume.id}
                         onClick={() => handleDownload(resume.path)}
-                        className="group flex w-full items-start gap-3 rounded-xl p-3 text-left transition-colors hover:bg-white/[0.04]"
+                        className="group flex w-full items-start gap-3 rounded-xl p-3 text-left transition-colors hover:bg-surface"
                       >
                         <div className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-lg border", a.border, a.bg)}>
                           <Icon className={cn("h-4 w-4", a.text)} />
@@ -154,7 +158,7 @@ export function ResumeMenu({ className, variant = "outline" }: ResumeMenuProps) 
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-white/[0.06] px-5 py-3">
+                <div className="border-t border-line px-5 py-3">
                   <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-muted-foreground/60">
                     PDF · opens in new tab · press Esc to close
                   </p>

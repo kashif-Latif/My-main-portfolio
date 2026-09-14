@@ -13,7 +13,7 @@ export interface JourneyStage {
   subtitle: string;
   description: string;
   items: string[];
-  accent: "blue" | "purple" | "cyan" | "gold";
+  accent: "amber" | "rust" | "golden" | "sand";
 }
 
 export const journeyStages: JourneyStage[] = [
@@ -35,7 +35,7 @@ export const journeyStages: JourneyStage[] = [
       "Java",
       "Python",
     ],
-    accent: "blue",
+    accent: "amber",
   },
   {
     id: "web-development",
@@ -57,7 +57,7 @@ export const journeyStages: JourneyStage[] = [
       "Authentication",
       "Deployment",
     ],
-    accent: "cyan",
+    accent: "golden",
   },
   {
     id: "machine-learning",
@@ -77,7 +77,7 @@ export const journeyStages: JourneyStage[] = [
       "Naive Bayes",
       "SVM",
     ],
-    accent: "purple",
+    accent: "rust",
   },
   {
     id: "deep-learning",
@@ -92,7 +92,7 @@ export const journeyStages: JourneyStage[] = [
       "Deep Learning concepts",
       "Model training",
     ],
-    accent: "blue",
+    accent: "amber",
   },
   {
     id: "generative-ai",
@@ -108,7 +108,7 @@ export const journeyStages: JourneyStage[] = [
       "Fine-Tuning",
       "AI applications",
     ],
-    accent: "purple",
+    accent: "rust",
   },
   {
     id: "ai-automation",
@@ -124,7 +124,7 @@ export const journeyStages: JourneyStage[] = [
       "Automation",
       "Production AI systems",
     ],
-    accent: "cyan",
+    accent: "golden",
   },
   {
     id: "agentic-ai",
@@ -141,7 +141,7 @@ export const journeyStages: JourneyStage[] = [
       "Autonomous task execution",
       "Multi-agent systems",
     ],
-    accent: "gold",
+    accent: "sand",
   },
 ];
 
