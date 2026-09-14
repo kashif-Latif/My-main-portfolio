@@ -10,14 +10,14 @@ export function HeroFallback() {
     <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
       {/* Animated gradient orbs */}
       <div
-        className="absolute left-1/2 top-1/2 h-[40vmin] w-[40vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-50 blur-3xl animate-pulse-slow"
+        className="absolute left-1/2 top-1/2 h-[40vmin] w-[40vmin] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-50 animate-pulse-slow"
         style={{
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--a1) 40%, transparent) 0%, transparent 70%)",
         }}
       />
       <div
-        className="absolute left-[40%] top-[40%] h-[30vmin] w-[30vmin] rounded-full opacity-40 blur-3xl animate-pulse-slow"
+        className="absolute left-[40%] top-[40%] h-[30vmin] w-[30vmin] rounded-full opacity-40 animate-pulse-slow"
         style={{
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--a2) 40%, transparent) 0%, transparent 70%)",
@@ -25,7 +25,7 @@ export function HeroFallback() {
         }}
       />
       <div
-        className="absolute left-[60%] top-[60%] h-[25vmin] w-[25vmin] rounded-full opacity-30 blur-3xl animate-pulse-slow"
+        className="absolute left-[60%] top-[60%] h-[25vmin] w-[25vmin] rounded-full opacity-30 animate-pulse-slow"
         style={{
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--a3) 40%, transparent) 0%, transparent 70%)",

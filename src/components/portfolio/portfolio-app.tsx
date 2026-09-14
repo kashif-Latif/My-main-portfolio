@@ -85,7 +85,7 @@ function PortfolioShell() {
 
       {/* Atmospheric glow blobs - fixed */}
       <div
-        className="pointer-events-none fixed top-0 left-1/4 h-[40vmin] w-[40vmin] rounded-full opacity-20 blur-3xl"
+        className="pointer-events-none fixed top-0 left-1/4 h-[40vmin] w-[40vmin] rounded-full opacity-20"
         style={{
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--a1) 60%, transparent) 0%, transparent 70%)",
@@ -93,7 +93,7 @@ function PortfolioShell() {
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none fixed bottom-0 right-1/4 h-[35vmin] w-[35vmin] rounded-full opacity-15 blur-3xl"
+        className="pointer-events-none fixed bottom-0 right-1/4 h-[35vmin] w-[35vmin] rounded-full opacity-15"
         style={{
           background:
             "radial-gradient(circle, color-mix(in oklab, var(--a2) 60%, transparent) 0%, transparent 70%)",

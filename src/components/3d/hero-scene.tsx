@@ -4,32 +4,44 @@ import { HeroFallback } from "./hero-fallback";
 
 import * as React from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdaptiveDpr, AdaptiveEvents, PerspectiveCamera } from "@react-three/drei";
+import { AdaptiveDpr, PerspectiveCamera } from "@react-three/drei";
 import { useTheme } from "next-themes";
 import * as THREE from "three";
 
 /* ============================================================
  * 3D Hero Scene — Floating AI Core
  *
- * Design intent (unchanged from the original):
- *  - Central glowing icosahedron (the "intelligence core")
- *  - Orbiting nodes representing connected systems
- *  - Thin lines connecting core <-> nodes
- *  - Subtle particle field for depth
- *  - Floating code fragments
- *  - Reacts subtly to mouse + scroll
+ * Same visual design as before: glowing icosahedron core, orbiting
+ * nodes wired back to it, particle field, drifting fragments, mouse
+ * and scroll parallax, breathing camera.
  *
- * Theming:
- *  Colours are no longer baked into the materials. A single amber ramp is
- *  swapped per theme, because a value that reads well on the espresso ground
- *  disappears on cream — the light set is darker and more saturated so the
- *  geometry keeps its contrast against the paper background.
+ * PERFORMANCE REWRITE — the previous version cost ~50 fps on a
+ * throttled desktop and made the whole page feel laggy. Four causes,
+ * in order of how much they cost:
  *
- * Performance:
- *  - Procedural geometry only (no GLTF)
- *  - Adaptive DPR + event throttling
- *  - Pauses when tab hidden or offscreen
- *  - Reduced-motion fallback handled by the wrapper
+ *  1. The connector lines rebuilt their geometry EVERY FRAME:
+ *     `setFromPoints([new Vector3(), mesh.position.clone()])` allocated
+ *     ~27 objects per frame and forced a fresh GPU buffer upload each
+ *     time. Now the positions are written straight into one Float32Array
+ *     per line with `needsUpdate = true` — zero allocation, no realloc.
+ *
+ *  2. It rendered at the display's full refresh rate. This is a slow
+ *     ambient graphic; nothing in it benefits from 60 fps. The canvas is
+ *     now `frameloop="demand"` driven by a fixed-rate limiter, so it
+ *     renders 30x/s on desktop and 24x/s on mobile. Roughly halves both
+ *     CPU and GPU cost and is visually indistinguishable.
+ *
+ *  3. `dpr` went up to 2, i.e. 4x the fragments on a retina screen, with
+ *     MSAA on top. For a soft translucent graphic that buys nothing.
+ *     Capped at 1.5 (1 on mobile), antialias off.
+ *
+ *  4. `meshStandardMaterial` + three lights meant full PBR shading on
+ *     every pixel of the core. The look is a translucent faceted shell —
+ *     `meshBasicMaterial` reproduces it, so the lights are gone too.
+ *
+ * Plus a watchdog: if the device still can't hold the target rate, the
+ * canvas unmounts itself and the CSS fallback takes over. Nobody gets a
+ * janky page just because their phone is slow.
  * ========================================================== */
 
 type Palette = {
@@ -39,8 +51,6 @@ type Palette = {
   nodes: [string, string, string];
   lines: [string, string];
   particles: [string, string, string];
-  light: string;
-  fill: string;
   particleOpacity: number;
   lineOpacity: number;
 };
@@ -54,12 +64,10 @@ const PALETTES: Record<"light" | "dark", Palette> = {
     nodes: ["#B5670E", "#A14522", "#9C7A10"],
     lines: ["#B5670E", "#A14522"],
     particles: ["#B5670E", "#A14522", "#9C7A10"],
-    light: "#E0A53F",
-    fill: "#C0752A",
     particleOpacity: 0.55,
     lineOpacity: 0.22,
   },
-  // Brighter, emissive: reads as light against the espresso ground.
+  // Brighter: reads as light against the espresso ground.
   dark: {
     core: "#F0A83F",
     wire: "#FFC163",
@@ -67,8 +75,6 @@ const PALETTES: Record<"light" | "dark", Palette> = {
     nodes: ["#FFC163", "#F0813A", "#FFD866"],
     lines: ["#FFC163", "#F0813A"],
     particles: ["#FFC163", "#F0813A", "#FFD866"],
-    light: "#FFC163",
-    fill: "#F0813A",
     particleOpacity: 0.8,
     lineOpacity: 0.22,
   },
@@ -82,6 +88,66 @@ const IS_MOBILE =
   typeof window !== "undefined" &&
   (window.matchMedia("(max-width: 768px)").matches ||
     /Mobi|Android/i.test(navigator.userAgent));
+
+/** One quality tier per device class — every count lives here. */
+const TIER = IS_MOBILE
+  ? { fps: 24, dpr: 1, nodes: 5, particles: 160, fragments: 3, sphereSegs: 8 }
+  : { fps: 30, dpr: 1.5, nodes: 8, particles: 320, fragments: 5, sphereSegs: 10 };
+
+const FRAME_BUDGET_MS = 1000 / TIER.fps;
+
+/* ---------- Fixed-rate driver for frameloop="demand" ---------- */
+function FrameLimiter() {
+  const invalidate = useThree((s) => s.invalidate);
+
+  React.useEffect(() => {
+    let raf = 0;
+    let last = 0;
+    const loop = (t: number) => {
+      raf = requestAnimationFrame(loop);
+      if (t - last >= FRAME_BUDGET_MS) {
+        last = t;
+        invalidate();
+      }
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [invalidate]);
+
+  return null;
+}
+
+/* ---------- Watchdog: bail out on devices that still can't cope ---------- */
+function PerfWatchdog({ onSlow }: { onSlow: () => void }) {
+  const samples = React.useRef<number[]>([]);
+  const last = React.useRef(0);
+  const settled = React.useRef(0);
+  const done = React.useRef(false);
+
+  useFrame(() => {
+    if (done.current) return;
+    const now = performance.now();
+
+    // Skip the first frames — shader compile and buffer upload spike.
+    if (settled.current < 8) {
+      settled.current += 1;
+      last.current = now;
+      return;
+    }
+
+    if (last.current) samples.current.push(now - last.current);
+    last.current = now;
+
+    if (samples.current.length >= 40) {
+      done.current = true;
+      const sorted = samples.current.sort((a, b) => a - b);
+      const median = sorted[sorted.length >> 1];
+      if (median > FRAME_BUDGET_MS * 2.2) onSlow();
+    }
+  });
+
+  return null;
+}
 
 /* ---------- Core ---------- */
 function Core({
@@ -123,38 +189,26 @@ function Core({
 
   return (
     <group>
-      {/* Solid translucent core */}
+      {/* Translucent faceted shell. Basic, not standard: no lights to run. */}
       <mesh ref={meshRef}>
         <icosahedronGeometry args={[1.0, 1]} />
-        <meshStandardMaterial
-          color={palette.core}
-          emissive={palette.core}
-          emissiveIntensity={0.5}
-          transparent
-          opacity={0.2}
-          roughness={0.2}
-          metalness={0.6}
-        />
+        <meshBasicMaterial color={palette.core} transparent opacity={0.22} />
       </mesh>
 
-      {/* Wireframe overlay */}
       <mesh ref={wireRef}>
         <icosahedronGeometry args={[1.05, 1]} />
         <meshBasicMaterial color={palette.wire} wireframe transparent opacity={0.55} />
       </mesh>
 
-      {/* Inner glow sphere */}
       <mesh ref={innerRef}>
-        <sphereGeometry args={[0.5, 24, 24]} />
+        <sphereGeometry args={[0.5, 20, 16]} />
         <meshBasicMaterial color={palette.glow} transparent opacity={0.35} />
       </mesh>
-
-      <pointLight color={palette.light} intensity={2.5} distance={6} decay={2} />
     </group>
   );
 }
 
-/* ---------- Orbiting nodes + connecting lines ---------- */
+/* ---------- Orbiting nodes + connector lines ---------- */
 function OrbitSystem({
   mouse,
   palette,
@@ -165,7 +219,7 @@ function OrbitSystem({
   const groupRef = React.useRef<THREE.Group>(null);
 
   const nodes = React.useMemo(() => {
-    const count = IS_MOBILE ? 6 : 9;
+    const count = TIER.nodes;
     return Array.from({ length: count }).map((_, i) => {
       const phi = Math.acos(-1 + (2 * i) / count);
       const theta = Math.sqrt(count * Math.PI) * phi;
@@ -183,73 +237,89 @@ function OrbitSystem({
     });
   }, [palette]);
 
-  const lineMaterials = React.useMemo(
+  /* Each line owns ONE Float32Array for its two endpoints. The frame loop
+   * writes into it directly instead of rebuilding the geometry, which is
+   * what made the old version allocate on every single frame. */
+  const lines = React.useMemo(
     () =>
-      nodes.map(
-        (_, i) =>
-          new THREE.LineBasicMaterial({
-            color: palette.lines[i % 2],
-            transparent: true,
-            opacity: palette.lineOpacity,
-          })
-      ),
+      nodes.map((_, i) => {
+        const array = new Float32Array(6);
+        const geometry = new THREE.BufferGeometry();
+        const attribute = new THREE.BufferAttribute(array, 3);
+        geometry.setAttribute("position", attribute);
+        // The endpoints move every frame, so a recomputed bounding sphere
+        // would be stale and the line could be culled mid-flight.
+        geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 12);
+
+        const material = new THREE.LineBasicMaterial({
+          color: palette.lines[i % 2],
+          transparent: true,
+          opacity: palette.lineOpacity,
+        });
+
+        const object = new THREE.Line(geometry, material);
+        object.frustumCulled = false;
+        return { array, attribute, object };
+      }),
     [nodes, palette]
   );
 
-  const lineGeometries = React.useMemo(
-    () =>
-      nodes.map(() =>
-        new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(0, 0, 0),
-          new THREE.Vector3(0, 0, 0),
-        ])
-      ),
-    [nodes]
-  );
+  // Per-frame writes go through a ref: mutable state by design, and it keeps
+  // the frame loop free of anything the compiler must treat as render-derived.
+  const linesRef = React.useRef(lines);
+  React.useEffect(() => {
+    linesRef.current = lines;
+  }, [lines]);
 
-  // three.js objects are not garbage collected with the React tree.
+  // three.js objects are not collected with the React tree.
   React.useEffect(
     () => () => {
-      lineMaterials.forEach((m) => m.dispose());
-      lineGeometries.forEach((g) => g.dispose());
+      lines.forEach((l) => {
+        l.object.geometry.dispose();
+        (l.object.material as THREE.Material).dispose();
+      });
     },
-    [lineMaterials, lineGeometries]
+    [lines]
   );
 
   useFrame((state) => {
-    if (!groupRef.current) return;
+    const group = groupRef.current;
+    if (!group) return;
     const t = state.clock.elapsedTime;
 
-    groupRef.current.rotation.y = t * 0.05 + mouse.current.x * 0.25;
-    groupRef.current.rotation.x = mouse.current.y * 0.15;
+    group.rotation.y = t * 0.05 + mouse.current.x * 0.25;
+    group.rotation.x = mouse.current.y * 0.15;
 
-    groupRef.current.children.forEach((child, i) => {
-      if (i >= nodes.length) return;
+    for (let i = 0; i < nodes.length; i++) {
+      const mesh = group.children[i] as THREE.Mesh | undefined;
+      if (!mesh?.position) continue;
       const node = nodes[i];
-      const mesh = child as THREE.Mesh;
-      if (!mesh.position) return;
 
       const orbitT = t * node.speed;
-      const orbitRadius = 0.3;
-      mesh.position.x = node.position.x + Math.cos(orbitT) * orbitRadius;
-      mesh.position.y = node.position.y + Math.sin(orbitT * 1.3) * orbitRadius;
-      mesh.position.z = node.position.z + Math.sin(orbitT) * orbitRadius;
+      const x = node.position.x + Math.cos(orbitT) * 0.3;
+      const y = node.position.y + Math.sin(orbitT * 1.3) * 0.3;
+      const z = node.position.z + Math.sin(orbitT) * 0.3;
+      mesh.position.set(x, y, z);
 
-      lineGeometries[i].setFromPoints([new THREE.Vector3(0, 0, 0), mesh.position.clone()]);
-    });
+      // Write the far endpoint straight into the existing GPU buffer.
+      const line = linesRef.current[i];
+      line.array[3] = x;
+      line.array[4] = y;
+      line.array[5] = z;
+      line.attribute.needsUpdate = true;
+    }
   });
 
   return (
     <group ref={groupRef}>
       {nodes.map((node, i) => (
         <mesh key={i}>
-          <sphereGeometry args={[node.size, 12, 12]} />
+          <sphereGeometry args={[node.size, TIER.sphereSegs, TIER.sphereSegs]} />
           <meshBasicMaterial color={node.color} />
         </mesh>
       ))}
-      {lineGeometries.map((geo, i) => (
-        // @ts-expect-error - three's Line constructor accepts (geometry, material)
-        <line key={`line-${i}`} geometry={geo} material={lineMaterials[i]} />
+      {lines.map((l, i) => (
+        <primitive key={`line-${i}`} object={l.object} />
       ))}
     </group>
   );
@@ -260,7 +330,7 @@ function ParticleField({ palette }: { palette: Palette }) {
   const pointsRef = React.useRef<THREE.Points>(null);
 
   const { positions, colors } = React.useMemo(() => {
-    const count = IS_MOBILE ? 250 : 600;
+    const count = TIER.particles;
     const positions = new Float32Array(count * 3);
     const colors = new Float32Array(count * 3);
     const swatches = palette.particles.map((c) => new THREE.Color(c));
@@ -279,6 +349,7 @@ function ParticleField({ palette }: { palette: Palette }) {
     return { positions, colors };
   }, [palette]);
 
+  // Two property writes per frame — the buffers never change.
   useFrame((state) => {
     if (!pointsRef.current) return;
     const t = state.clock.elapsedTime;
@@ -287,7 +358,7 @@ function ParticleField({ palette }: { palette: Palette }) {
   });
 
   return (
-    <points ref={pointsRef}>
+    <points ref={pointsRef} frustumCulled={false}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -301,7 +372,7 @@ function ParticleField({ palette }: { palette: Palette }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={IS_MOBILE ? 0.028 : 0.022}
+        size={IS_MOBILE ? 0.032 : 0.024}
         vertexColors
         transparent
         opacity={palette.particleOpacity}
@@ -312,33 +383,37 @@ function ParticleField({ palette }: { palette: Palette }) {
   );
 }
 
-/* ---------- Floating code fragments ---------- */
+/* ---------- Drifting fragments ---------- */
 function CodeFragments({ palette }: { palette: Palette }) {
   const groupRef = React.useRef<THREE.Group>(null);
-  const fragments = React.useMemo(() => {
-    const count = IS_MOBILE ? 4 : 7;
-    return Array.from({ length: count }).map(() => ({
-      position: [
-        (Math.random() - 0.5) * 6,
-        (Math.random() - 0.5) * 4,
-        (Math.random() - 0.5) * 3 - 1,
-      ] as [number, number, number],
-      scale: 0.6 + Math.random() * 0.6,
-      speed: 0.3 + Math.random() * 0.4,
-      phase: Math.random() * Math.PI * 2,
-    }));
-  }, []);
+
+  const fragments = React.useMemo(
+    () =>
+      Array.from({ length: TIER.fragments }).map(() => ({
+        position: [
+          (Math.random() - 0.5) * 6,
+          (Math.random() - 0.5) * 4,
+          (Math.random() - 0.5) * 3 - 1,
+        ] as [number, number, number],
+        scale: 0.6 + Math.random() * 0.6,
+        speed: 0.3 + Math.random() * 0.4,
+        phase: Math.random() * Math.PI * 2,
+      })),
+    []
+  );
 
   useFrame((state) => {
-    if (!groupRef.current) return;
+    const group = groupRef.current;
+    if (!group) return;
     const t = state.clock.elapsedTime;
-    groupRef.current.children.forEach((child, i) => {
-      if (i >= fragments.length) return;
+    for (let i = 0; i < fragments.length; i++) {
+      const child = group.children[i];
+      if (!child) continue;
       const f = fragments[i];
       child.position.y = f.position[1] + Math.sin(t * f.speed + f.phase) * 0.2;
       child.position.x = f.position[0] + Math.cos(t * f.speed * 0.7 + f.phase) * 0.15;
       child.rotation.z = Math.sin(t * 0.3 + f.phase) * 0.1;
-    });
+    }
   });
 
   return (
@@ -360,34 +435,7 @@ function CodeFragments({ palette }: { palette: Palette }) {
   );
 }
 
-/* ---------- Scene wrapper ---------- */
-function Scene({
-  mouse,
-  scroll,
-  palette,
-}: {
-  mouse: React.RefObject<{ x: number; y: number }>;
-  scroll: React.RefObject<number>;
-  palette: Palette;
-}) {
-  return (
-    <>
-      <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
-      <CameraRig mouse={mouse} scroll={scroll} />
-
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[5, 5, 5]} intensity={0.65} color={palette.light} />
-      <directionalLight position={[-5, -3, -5]} intensity={0.35} color={palette.fill} />
-
-      <Core mouse={mouse} scroll={scroll} palette={palette} />
-      <OrbitSystem mouse={mouse} palette={palette} />
-      <ParticleField palette={palette} />
-      <CodeFragments palette={palette} />
-    </>
-  );
-}
-
-/* ---------- CameraRig — breathing zoom + slow revolution ---------- */
+/* ---------- Camera rig: breathing zoom + slow revolution ---------- */
 function CameraRig({
   mouse,
   scroll,
@@ -404,18 +452,13 @@ function CameraRig({
     const baseZ = 4.5 + breath * 3.0;
 
     const orbitAngle = t * 0.08;
-    const orbitRadius = 0.6;
-    const orbitX = Math.cos(orbitAngle) * orbitRadius;
-    const orbitY = Math.sin(orbitAngle) * orbitRadius * 0.5;
-
-    const scrollOffset = scroll.current * 2.0;
-    const mouseX = mouse.current.x * 0.5;
-    const mouseY = mouse.current.y * 0.4;
+    const orbitX = Math.cos(orbitAngle) * 0.6;
+    const orbitY = Math.sin(orbitAngle) * 0.3;
 
     /* eslint-disable react-hooks/immutability */
-    camera.position.x = orbitX + mouseX;
-    camera.position.y = orbitY + mouseY;
-    camera.position.z = baseZ + scrollOffset;
+    camera.position.x = orbitX + mouse.current.x * 0.5;
+    camera.position.y = orbitY + mouse.current.y * 0.4;
+    camera.position.z = baseZ + scroll.current * 2.0;
     camera.lookAt(0, 0, 0);
     /* eslint-enable react-hooks/immutability */
   });
@@ -423,18 +466,47 @@ function CameraRig({
   return null;
 }
 
-/* ---------- Public component with viewport + reduced motion guards ---------- */
-export function HeroScene() {
+/* ---------- Scene ---------- */
+function Scene({
+  mouse,
+  scroll,
+  palette,
+  onSlow,
+}: {
+  mouse: React.RefObject<{ x: number; y: number }>;
+  scroll: React.RefObject<number>;
+  palette: Palette;
+  onSlow: () => void;
+}) {
+  return (
+    <>
+      <PerspectiveCamera makeDefault position={[0, 0, 6]} fov={45} />
+      <FrameLimiter />
+      <PerfWatchdog onSlow={onSlow} />
+      <CameraRig mouse={mouse} scroll={scroll} />
+
+      {/* No lights: every material here is unlit by design. */}
+      <Core mouse={mouse} scroll={scroll} palette={palette} />
+      <OrbitSystem mouse={mouse} palette={palette} />
+      <ParticleField palette={palette} />
+      <CodeFragments palette={palette} />
+    </>
+  );
+}
+
+/* ---------- Public component ---------- */
+export function HeroScene({ onSlow }: { onSlow: () => void }) {
   const mouse = React.useRef({ x: 0, y: 0 });
   const scroll = React.useRef(0);
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [shouldRender, setShouldRender] = React.useState(true);
+  const [visible, setVisible] = React.useState(true);
 
   const { resolvedTheme } = useTheme();
   const palette = PALETTES[resolvedTheme === "dark" ? "dark" : "light"];
 
+  // Pointer parallax is a desktop affordance; skip the listener on touch.
   React.useEffect(() => {
-    if (REDUCED_MOTION) return;
+    if (REDUCED_MOTION || IS_MOBILE) return;
     const onMove = (e: MouseEvent) => {
       mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
@@ -452,21 +524,22 @@ export function HeroScene() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Stop rendering when offscreen or the tab is hidden — no wasted GPU/battery.
+  // Stop rendering entirely when the hero is off screen or the tab is hidden.
   React.useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+
     const io = new IntersectionObserver(
-      ([entry]) => setShouldRender(entry.isIntersecting),
+      ([entry]) => setVisible(entry.isIntersecting && !document.hidden),
       { threshold: 0 }
     );
     io.observe(el);
 
     const onVisibility = () => {
-      if (document.hidden) setShouldRender(false);
+      if (document.hidden) setVisible(false);
       else {
         const rect = el.getBoundingClientRect();
-        setShouldRender(rect.top < window.innerHeight && rect.bottom > 0);
+        setVisible(rect.top < window.innerHeight && rect.bottom > 0);
       }
     };
     document.addEventListener("visibilitychange", onVisibility);
@@ -479,53 +552,51 @@ export function HeroScene() {
 
   return (
     <div ref={containerRef} className="absolute inset-0" aria-hidden="true">
-      {shouldRender && (
+      {visible && (
         <Canvas
-          dpr={[1, IS_MOBILE ? 1.5 : 2]}
+          dpr={[1, TIER.dpr]}
+          frameloop="demand"
           gl={{
-            antialias: !IS_MOBILE,
+            antialias: false,
             alpha: true,
-            powerPreference: "high-performance",
+            powerPreference: "default",
             stencil: false,
             depth: true,
           }}
-          frameloop={REDUCED_MOTION ? "demand" : "always"}
         >
           <AdaptiveDpr pixelated />
-          <AdaptiveEvents />
-          <Scene mouse={mouse} scroll={scroll} palette={palette} />
+          <Scene mouse={mouse} scroll={scroll} palette={palette} onSlow={onSlow} />
         </Canvas>
       )}
     </div>
   );
 }
 
-/* ---------- Wrapper with WebGL detection ---------- */
+/* ---------- Wrapper: WebGL detection + automatic downgrade ---------- */
 export function HeroSceneWithFallback() {
-  const [supportsWebGL, setSupportsWebGL] = React.useState<boolean | null>(null);
+  const [mode, setMode] = React.useState<"probing" | "webgl" | "fallback">("probing");
 
   React.useEffect(() => {
-    // Probe deferred one frame: keeps the effect body free of synchronous
-    // setState and lets first paint happen before any canvas/context work.
+    // Deferred one frame so first paint happens before any canvas work.
     const raf = requestAnimationFrame(() => {
       if (REDUCED_MOTION) {
-        setSupportsWebGL(false);
+        setMode("fallback");
         return;
       }
       try {
         const canvas = document.createElement("canvas");
         const gl =
           canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        setSupportsWebGL(!!gl);
+        setMode(gl ? "webgl" : "fallback");
       } catch {
-        setSupportsWebGL(false);
+        setMode("fallback");
       }
     });
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  if (!supportsWebGL) {
-    return <HeroFallback />;
-  }
-  return <HeroScene />;
+  const downgrade = React.useCallback(() => setMode("fallback"), []);
+
+  if (mode !== "webgl") return <HeroFallback />;
+  return <HeroScene onSlow={downgrade} />;
 }

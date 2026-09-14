@@ -444,6 +444,10 @@ function HireMeBadge() {
         viewBox="0 0 100 100"
         className="absolute inset-0 h-full w-full animate-[spin-slow_14s_linear_infinite]"
         aria-hidden="true"
+        /* Own layer: the curved text is rasterised once, then only the
+           layer transform animates. Without this the browser re-lays-out
+           the textPath on every frame. */
+        style={{ willChange: "transform" }}
       >
         <defs>
           <path
@@ -590,7 +594,7 @@ function AboutSection() {
 
             {/* Floating accent glow behind picture */}
             <div
-              className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl opacity-30 blur-2xl"
+              className="pointer-events-none absolute -inset-4 -z-10 rounded-3xl opacity-30"
               style={{
                 background:
                   "radial-gradient(circle at 30% 30%, color-mix(in oklab, var(--a1) 40%, transparent) 0%, transparent 60%), radial-gradient(circle at 70% 70%, color-mix(in oklab, var(--a2) 40%, transparent) 0%, transparent 60%)",
