@@ -12,10 +12,13 @@ export const profile = {
   degree: "BS Computer Science",
   academicStage: "Fourth Semester (approx.)",
   tagline: "AI Engineer & Full Stack Developer",
+  currentRole: "Full Stack Developer",
+  currentCompany: "Gro Hub Solutions",
+  experienceLabel: "6 months",
   heroSubtitle:
-    "BS Computer Science student building intelligent software, scalable web applications, automation systems, and AI-powered products.",
+    "Full Stack Developer at Gro Hub Solutions and BS Computer Science student — building AI chatbots, automation systems, and the ERP behind a multi-company retail and manufacturing group.",
   positioning:
-    "A fast-growing Computer Science student and developer building a strong intersection between software engineering, full-stack development, machine learning, and modern AI systems.",
+    "A fast-growing Computer Science student and working Full Stack Developer building a strong intersection between software engineering, full-stack development, machine learning, and modern AI systems.",
   rotatingRoles: [
     "AI Engineer",
     "Full Stack Developer",
@@ -33,7 +36,7 @@ export const profile = {
     "Production AI Systems",
   ],
   quickIntro:
-    "I'm a Computer Science student focused on Artificial Intelligence, Full Stack Development, Machine Learning, AI Automation, Generative AI, and Agentic Systems. I believe in building real-world projects over collecting certificates — practical depth is the foundation I'm constructing for a long-term career in AI engineering.",
+    "I'm a Computer Science student and a working Full Stack Developer at Gro Hub Solutions, focused on Artificial Intelligence, Full Stack Development, Machine Learning, AI Automation, Generative AI, and Agentic Systems. I believe in building real-world projects over collecting certificates — and right now that means shipping production software for a business that depends on it.",
   philosophy: "Learn deeply. Build practically. Ship consistently.",
   philosophyDetails: [
     "Real-world projects over passive learning",

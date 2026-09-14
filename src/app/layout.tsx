@@ -115,7 +115,7 @@ const jsonLd = {
   name: "Muhammad Kashif Latif",
   jobTitle: "AI Engineer & Full Stack Developer",
   description:
-    "BS Computer Science student building intelligent software, scalable web applications, and AI-powered products.",
+    "Full Stack Developer at Gro Hub Solutions and BS Computer Science student, building AI chatbots, automation systems and ERP software.",
   knowsAbout: [
     "Artificial Intelligence",
     "Machine Learning",
@@ -129,6 +129,14 @@ const jsonLd = {
     "Node.js",
     "Django",
   ],
+  worksFor: {
+    "@type": "Organization",
+    name: "Gro Hub Solutions",
+  },
+  hasOccupation: {
+    "@type": "Occupation",
+    name: "Full Stack Developer",
+  },
   alumniOf: {
     "@type": "CollegeOrUniversity",
     name: "Minhaj University Lahore",

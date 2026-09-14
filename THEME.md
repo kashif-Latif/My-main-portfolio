@@ -80,7 +80,21 @@ internet or behind a firewall. Runtime behaviour is identical — `next/font`
 self-hosts either way — but the build no longer depends on a third party.
 Both files together are ~75 KB and cover every weight from 200 to 800.
 
-## Dark mode
+## Dark mode — design notes
+
+The ground is **near-neutral** charcoal (`oklch(0.148 0.007 62)`), not warm
+brown. A large field of saturated brown at low lightness reads as mud; the
+warmth belongs in the accents and the raised surfaces, not the page itself.
+
+Cards sit **+0.065 L above the ground** and carry a 1px inset highlight on
+their top edge (`--shadow-card`). That highlight is what makes a dark card read
+as *raised* rather than as a hole cut in the page — without it, cards and page
+look like two shades of the same thing.
+
+`--grid-line` is a separate token from `--line` so the background grid can be
+dialled back in dark (5%) without weakening the card hairlines (13%).
+
+## Theme plumbing
 
 `next-themes` with `attribute="class"`, `defaultTheme="light"`, `enableSystem`.
 The toggle is `src/components/portfolio/theme-toggle.tsx`.

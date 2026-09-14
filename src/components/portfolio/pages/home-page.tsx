@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, ArrowUpRight, Mail, MapPin, GraduationCap, Phone } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  ArrowUpRight,
+  Mail,
+  MapPin,
+  GraduationCap,
+  Briefcase,
+  Phone,
+} from "lucide-react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { HeroFallback } from "@/components/3d/hero-fallback";
@@ -20,6 +29,7 @@ const HeroSceneWithFallback = dynamic(
 import { RotatingRoles } from "@/components/portfolio/rotating-roles";
 import { BrandButton } from "@/components/portfolio/brand-button";
 import { Marquee } from "@/components/portfolio/marquee";
+import { ExperienceStrip } from "@/components/portfolio/experience";
 import { ResumeMenu } from "@/components/portfolio/resume-menu";
 import { SectionHeading } from "@/components/portfolio/section-heading";
 import { ProjectCard } from "@/components/portfolio/project-card";
@@ -146,6 +156,10 @@ export function HomePage() {
                 className="mt-8 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground lg:justify-start"
               >
                 <span className="flex items-center gap-1.5">
+                  <Briefcase className="h-3.5 w-3.5 text-brand" />
+                  {profile.currentRole} @ {profile.currentCompany}
+                </span>
+                <span className="flex items-center gap-1.5">
                   <MapPin className="h-3.5 w-3.5 text-brand" />
                   {profile.location}
                 </span>
@@ -191,6 +205,13 @@ export function HomePage() {
 
       {/* ===== ABOUT SECTION (right below the hero / scroll button) ===== */}
       <AboutSection />
+
+      {/* ===== EXPERIENCE ===== */}
+      <section className="relative border-t border-line py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ExperienceStrip />
+        </div>
+      </section>
 
       {/* ===== QUICK INTRODUCTION ===== */}
       <section className="relative py-20 sm:py-28">

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { profile } from "@/data/profile";
 import { SectionHeading } from "@/components/portfolio/section-heading";
+import { ExperienceSection } from "@/components/portfolio/experience";
 import { useAppRouter } from "@/hooks/use-app-router";
 
 export function AboutPage() {
@@ -74,6 +75,13 @@ export function AboutPage() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* ===== EDUCATION & EXPERIENCE ===== */}
+      <section className="relative border-t border-line py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <ExperienceSection />
         </div>
       </section>
 

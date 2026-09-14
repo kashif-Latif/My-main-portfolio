@@ -116,6 +116,7 @@
   --surface-2: oklch(0.215 0.019 66 / 5%);
   --line: oklch(0.215 0.019 66 / 12%);
   --line-strong: oklch(0.215 0.019 66 / 22%);
+  --grid-line: oklch(0.215 0.019 66 / 11%);
 
   --border: oklch(0.215 0.019 66 / 13%);
   --input: oklch(0.215 0.019 66 / 10%);
@@ -158,74 +159,97 @@
 
 /* ============================================================
  * DARK — "Espresso"
- * Same brand, inverted ground. Kept genuinely usable, not an
- * afterthought: strokes and surfaces flip with the theme.
+ *
+ * Rebuilt. The first pass tinted the whole page warm brown at low
+ * lightness, which at full-screen scale reads as mud rather than as a
+ * rich dark, and it put cards only 0.05 L above the ground so nothing
+ * looked raised. Three changes fix it:
+ *
+ *  1. The ground is near-NEUTRAL charcoal (chroma 0.007, not 0.016).
+ *     Warmth belongs in the accents and the raised surfaces; a large
+ *     saturated field just looks dirty.
+ *  2. Cards sit +0.065 L above the ground and carry a 1px inset
+ *     highlight along their top edge, so they read as lit from above.
+ *  3. Body text, hairlines and the amber are all brighter — the old
+ *     values were tuned against a lighter ground than this one.
  * ========================================================== */
 .dark {
-  --background: oklch(0.168 0.016 62);
-  --foreground: oklch(0.945 0.018 100);
+  --background: oklch(0.148 0.007 62);
+  --foreground: oklch(0.972 0.009 96);
 
-  --card: oklch(0.215 0.019 66);
-  --card-foreground: oklch(0.945 0.018 100);
+  --card: oklch(0.213 0.011 64);
+  --card-foreground: oklch(0.972 0.009 96);
 
-  --popover: oklch(0.205 0.018 66);
-  --popover-foreground: oklch(0.945 0.018 100);
+  --popover: oklch(0.232 0.012 64);
+  --popover-foreground: oklch(0.972 0.009 96);
 
-  --brand: oklch(0.795 0.155 70);
-  --brand-deep: oklch(0.715 0.16 58);
-  --brand-soft: oklch(0.795 0.155 70 / 16%);
+  --brand: oklch(0.805 0.165 72);
+  --brand-deep: oklch(0.72 0.17 58);
+  --brand-soft: oklch(0.805 0.165 72 / 18%);
 
-  --primary: oklch(0.795 0.155 70);
-  --primary-foreground: oklch(0.18 0.016 62);
+  --primary: oklch(0.805 0.165 72);
+  --primary-foreground: oklch(0.16 0.012 62);
 
-  --secondary: oklch(0.262 0.021 66);
-  --secondary-foreground: oklch(0.945 0.018 100);
+  --secondary: oklch(0.262 0.013 64);
+  --secondary-foreground: oklch(0.972 0.009 96);
 
-  --muted: oklch(0.25 0.02 66);
-  --muted-foreground: oklch(0.715 0.024 90);
+  --muted: oklch(0.25 0.012 64);
+  --muted-foreground: oklch(0.775 0.016 90);
 
-  --accent: oklch(0.3 0.038 70);
-  --accent-foreground: oklch(0.945 0.018 100);
+  --accent: oklch(0.305 0.032 70);
+  --accent-foreground: oklch(0.972 0.009 96);
 
-  --destructive: oklch(0.66 0.19 27);
+  --destructive: oklch(0.68 0.19 27);
 
-  --surface: oklch(0.956 0.021 104 / 4%);
-  --surface-2: oklch(0.956 0.021 104 / 8%);
-  --line: oklch(0.956 0.021 104 / 12%);
-  --line-strong: oklch(0.956 0.021 104 / 22%);
+  /* Neutral white alphas: on a near-neutral ground these stay clean,
+     where a warm-tinted stroke would go orange-grey. */
+  --surface: oklch(1 0 0 / 5%);
+  --surface-2: oklch(1 0 0 / 10%);
+  --line: oklch(1 0 0 / 13%);
+  --line-strong: oklch(1 0 0 / 28%);
+  --grid-line: oklch(1 0 0 / 5%);
 
-  --border: oklch(0.956 0.021 104 / 12%);
-  --input: oklch(0.956 0.021 104 / 12%);
-  --ring: oklch(0.795 0.155 70 / 55%);
+  --border: oklch(1 0 0 / 13%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.805 0.165 72 / 60%);
 
-  --a1: oklch(0.795 0.155 70);
-  --a2: oklch(0.715 0.155 40);
-  --a3: oklch(0.855 0.125 92);
-  --a4: oklch(0.795 0.055 76);
+  --a1: oklch(0.815 0.16 72);
+  --a2: oklch(0.735 0.155 42);
+  --a3: oklch(0.87 0.13 94);
+  --a4: oklch(0.83 0.045 80);
 
   --chart-1: var(--a1);
   --chart-2: var(--a2);
   --chart-3: var(--a3);
   --chart-4: var(--a4);
-  --chart-5: oklch(0.75 0.12 48);
+  --chart-5: oklch(0.77 0.125 50);
 
-  --sidebar: oklch(0.195 0.018 64);
-  --sidebar-foreground: oklch(0.945 0.018 100);
+  --sidebar: oklch(0.19 0.01 62);
+  --sidebar-foreground: oklch(0.972 0.009 96);
   --sidebar-primary: var(--brand);
-  --sidebar-primary-foreground: oklch(0.18 0.016 62);
-  --sidebar-accent: oklch(0.3 0.038 70);
-  --sidebar-accent-foreground: oklch(0.945 0.018 100);
-  --sidebar-border: oklch(0.956 0.021 104 / 12%);
-  --sidebar-ring: oklch(0.795 0.155 70 / 55%);
+  --sidebar-primary-foreground: oklch(0.16 0.012 62);
+  --sidebar-accent: oklch(0.305 0.032 70);
+  --sidebar-accent-foreground: oklch(0.972 0.009 96);
+  --sidebar-border: oklch(1 0 0 / 13%);
+  --sidebar-ring: oklch(0.805 0.165 72 / 60%);
 
-  --glow: 0 18px 50px -20px oklch(0.795 0.155 70 / 45%);
-  --shadow-card: 0 1px 2px oklch(0 0 0 / 30%), 0 12px 32px -18px oklch(0 0 0 / 60%);
-  --shadow-lift: 0 2px 4px oklch(0 0 0 / 35%), 0 24px 48px -20px oklch(0 0 0 / 65%);
+  /* The inset top line is what makes a dark card read as raised rather
+     than as a hole cut in the page. */
+  --glow: 0 18px 55px -18px oklch(0.805 0.165 72 / 50%);
+  --shadow-card:
+    inset 0 1px 0 oklch(1 0 0 / 7%),
+    0 2px 6px oklch(0 0 0 / 40%),
+    0 18px 40px -22px oklch(0 0 0 / 80%);
+  --shadow-lift:
+    inset 0 1px 0 oklch(1 0 0 / 11%),
+    0 4px 12px oklch(0 0 0 / 45%),
+    0 30px 60px -24px oklch(0 0 0 / 85%);
 
-  --panel: oklch(0.245 0.021 66);
-  --panel-foreground: oklch(0.956 0.021 104);
-  --panel-muted: oklch(0.956 0.021 104 / 62%);
-  --panel-line: oklch(0.956 0.021 104 / 14%);
+  /* Panels lift ABOVE the page in dark (they sit below it on cream). */
+  --panel: oklch(0.245 0.014 66);
+  --panel-foreground: oklch(0.972 0.009 96);
+  --panel-muted: oklch(0.972 0.009 96 / 66%);
+  --panel-line: oklch(1 0 0 / 14%);
 
   color-scheme: dark;
 }
@@ -313,13 +337,13 @@
   .panel {
     background: var(--panel);
     color: var(--panel-foreground);
-    --a1: oklch(0.795 0.155 70);
-    --a2: oklch(0.745 0.15 42);
-    --a3: oklch(0.855 0.125 92);
-    --a4: oklch(0.815 0.05 78);
-    --brand: oklch(0.795 0.155 70);
+    --a1: oklch(0.815 0.16 72);
+    --a2: oklch(0.735 0.155 42);
+    --a3: oklch(0.87 0.13 94);
+    --a4: oklch(0.83 0.045 80);
+    --brand: oklch(0.805 0.165 72);
     --line: var(--panel-line);
-    --line-strong: oklch(0.956 0.021 104 / 24%);
+    --line-strong: oklch(1 0 0 / 26%);
     --muted-foreground: var(--panel-muted);
   }
   .panel-hair {
@@ -428,8 +452,8 @@
   /* ---------- Backgrounds ---------- */
   .bg-grid {
     background-image:
-      linear-gradient(to right, var(--line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
     background-size: 64px 64px;
   }
 

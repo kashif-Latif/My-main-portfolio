@@ -61,16 +61,16 @@ const PALETTES: Record<"light" | "dark", Palette> = {
   },
   // Brighter, emissive: reads as light against the espresso ground.
   dark: {
-    core: "#E9A13B",
-    wire: "#F5B44A",
-    glow: "#E4762F",
-    nodes: ["#F5B44A", "#E4762F", "#F2C94C"],
-    lines: ["#F5B44A", "#E4762F"],
-    particles: ["#F5B44A", "#E4762F", "#F2C94C"],
-    light: "#F5B44A",
-    fill: "#E4762F",
-    particleOpacity: 0.7,
-    lineOpacity: 0.18,
+    core: "#F0A83F",
+    wire: "#FFC163",
+    glow: "#F08A3C",
+    nodes: ["#FFC163", "#F0813A", "#FFD866"],
+    lines: ["#FFC163", "#F0813A"],
+    particles: ["#FFC163", "#F0813A", "#FFD866"],
+    light: "#FFC163",
+    fill: "#F0813A",
+    particleOpacity: 0.8,
+    lineOpacity: 0.22,
   },
 };
 
